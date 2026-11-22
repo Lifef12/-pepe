@@ -1,1 +1,18 @@
-
+{
+  "name": "pepe-rewards",
+  "version": "1.0.0",
+  "private": true,
+  "description": "$PEPE Rewards - Telegram tap to earn bot",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^7.5.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
