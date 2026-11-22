@@ -27,7 +27,7 @@ const COIN = '$PEPE';
 const BOT_USERNAME = 'PepeRewardsTg_Bot';
 const fmtD = n => Number(n || 0).toLocaleString('en-US', { maximumFractionDigits: 2 });
 
-const TASK_REWARD = 500;              // per task (3 tasks)
+const TASK_REWARD = 300;              // per task (4 tasks)
 const REF_BONUS = 1000;               // per verified friend
 const JOIN_BONUS = 200;               // pehli baar verify par
 const MIN_WITHDRAW = 7000;            // minimum withdraw
@@ -45,7 +45,7 @@ const MAX_TPS = 14;                   // insani limit: taps / second
 const YT_CLAIM_DELAY = 10 * 1000;     // Submit ke kitni der baad Claim
 
 // ---------- CHANNELS ----------
-// id = frontend ke data-id se match (c1 / c3). YouTube ka server check nahi ho sakta.
+// id = frontend ke data-id se match (c1 / c3). YouTube / WhatsApp ka server check nahi ho sakta.
 const CHANNEL_UPDATES = { key: 'c1', id: '@updatechanneluta', name: 'Official Updates Channel', url: 'https://t.me/updatechanneluta' };
 const CHANNEL_PAYOUTS = { key: 'c3', id: '@cryptotech16', name: 'Official Payouts Channel', url: 'https://t.me/cryptotech16' };
 const VERIFY_CHANNELS = [CHANNEL_UPDATES, CHANNEL_PAYOUTS];
@@ -56,7 +56,9 @@ const TASK_CHANNEL = { id: '@paymentchanneluta', name: 'Telegram Task Channel' }
 // Har paid withdraw yahan auto post hota hai
 const PAYMENT_CHANNEL = '@cryptotech16';
 
-const YT_TASKS = ['yt1', 'yt2'];
+// Open -> Submit -> Claim flow wale tasks (YouTube + WhatsApp)
+const YT_TASKS = ['yt1', 'yt2', 'wa1'];
+const WA_CHANNEL_URL = 'https://whatsapp.com/channel/0029VbD5A2Q3LdQREXOzuk3i';
 
 const WELCOME_IMG = process.env.WELCOME_IMG !== undefined ? process.env.WELCOME_IMG : '';
 const WELCOME_TEXT = 'Hello, welcome to <b>$PEPE Rewards</b>! 🐸 Get ready for an exciting earning experience!\n\n' +
@@ -87,7 +89,8 @@ const UserSchema = new mongoose.Schema({
     tasks: {
         tg2: { type: Boolean, default: false },
         yt1: { type: Boolean, default: false },
-        yt2: { type: Boolean, default: false }
+        yt2: { type: Boolean, default: false },
+        wa1: { type: Boolean, default: false }
     },
     // tap + energy
     tapDay: { type: String, default: '' },
@@ -437,7 +440,8 @@ function publicUser(u, pending) {
         tasks: {
             tg2: !!(u.tasks && u.tasks.tg2),
             yt1: !!(u.tasks && u.tasks.yt1),
-            yt2: !!(u.tasks && u.tasks.yt2)
+            yt2: !!(u.tasks && u.tasks.yt2),
+            wa1: !!(u.tasks && u.tasks.wa1)
         },
         proof: pending ? { task: pending.task, status: 'ready' } : null,
         referrals: cleanReferrals(u.referrals),
@@ -728,7 +732,7 @@ app.post('/api/task', auth, wrap(async (req, res) => {
     res.json({ ok: true, data: await userView(done) });
 }));
 
-// ---------- YOUTUBE TASKS (Open -> Submit -> Claim) ----------
+// ---------- YOUTUBE + WHATSAPP TASKS (Open -> Submit -> Claim) ----------
 async function ytSubmit(req, res) {
     const u = req.user;
     const taskId = String(req.body.taskId || '');
