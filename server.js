@@ -30,7 +30,7 @@ const fmtD = n => Number(n || 0).toLocaleString('en-US', { maximumFractionDigits
 const TASK_REWARD = 300;              // default per task
 const TASK_REWARDS = { tg2: 300, yt1: 300, yt2: 300, wa1: 300 };   // per-task reward
 const rewardFor = id => TASK_REWARDS[id] || TASK_REWARD;
-const REF_BONUS = 1000;               // per verified friend
+const REF_BONUS = 600;                // per verified friend
 const JOIN_BONUS = 200;               // pehli baar verify par
 const MIN_WITHDRAW = 7000;            // minimum withdraw
 const MIN_REFS = 4;                   // withdraw ke liye kam az kam itne VERIFIED referrals
