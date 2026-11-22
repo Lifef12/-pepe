@@ -27,7 +27,9 @@ const COIN = '$PEPE';
 const BOT_USERNAME = 'PepeRewardsTg_Bot';
 const fmtD = n => Number(n || 0).toLocaleString('en-US', { maximumFractionDigits: 2 });
 
-const TASK_REWARD = 300;              // per task (4 tasks)
+const TASK_REWARD = 300;              // default per task
+const TASK_REWARDS = { tg2: 300, yt1: 300, yt2: 300, wa1: 300 };   // per-task reward
+const rewardFor = id => TASK_REWARDS[id] || TASK_REWARD;
 const REF_BONUS = 1000;               // per verified friend
 const JOIN_BONUS = 200;               // pehli baar verify par
 const MIN_WITHDRAW = 7000;            // minimum withdraw
@@ -573,7 +575,12 @@ app.use((req, res, next) => {
     }
     next();
 });
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), {
+    setHeaders: (res, filePath) => {
+        // HTML kabhi cache na ho, taaki Telegram hamesha naya index.html le
+        if (filePath.endsWith('.html')) res.setHeader('Cache-Control', 'no-store');
+    }
+}));
 app.get('/health', (req, res) => res.send(dbReady() ? 'OK' : 'OK (database connecting)'));
 app.get('/api/ping', (req, res) => res.json({ ok: true, db: dbReady(), version: 'pepe-rewards-v1' }));
 
@@ -725,7 +732,7 @@ app.post('/api/task', auth, wrap(async (req, res) => {
 
     const done = await User.findOneAndUpdate(
         { id: u.id, 'tasks.tg2': { $ne: true } },
-        { $set: { 'tasks.tg2': true }, $inc: earn(TASK_REWARD) },
+        { $set: { 'tasks.tg2': true }, $inc: earn(rewardFor('tg2')) },
         { new: true }
     );
     if (!done) return res.json({ ok: false, error: 'Task already claimed' });
@@ -773,7 +780,7 @@ async function ytClaim(req, res) {
     const key = `tasks.${pr.task}`;
     const done = await User.findOneAndUpdate(
         { id: u.id, [key]: { $ne: true } },
-        { $set: { [key]: true }, $inc: earn(TASK_REWARD) },
+        { $set: { [key]: true }, $inc: earn(rewardFor(pr.task)) },
         { new: true }
     );
     if (!done) return res.json({ ok: false, error: 'Task already claimed' });
