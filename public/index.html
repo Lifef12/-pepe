@@ -205,10 +205,12 @@ nav a.on{--ic:#fff;--ib:#075c3d;color:#fff;background:linear-gradient(180deg,#11
 /* ================= CONFIG ================= */
 const API_BASE='https://pepe-1-f2ra.onrender.com';   // Render server
 const BOT='PepeRewardsTg_Bot', SUP='https://t.me/AlexMorgan1101';
-const CFG={tapBase:1,tapCap:500,maxLvl:10,minWd:7000,minRefs:4,friend:1000,task:500,joinBonus:200,
+const CFG={tapBase:1,tapCap:500,maxLvl:10,minWd:7000,minRefs:4,friend:1000,task:500,rw:{},joinBonus:200,
  checkin:[50,75,100,150,200,250,300],wheel:[100,300,100,300,100,300,100,300],
  ranks:[['Tadpole',0],['Froglet',2000],['Hopper',10000],['Jumper',40000],['Alpha',120000],['Legend',400000]]};
-const TK=[['tg2','✈️','Join Telegram','','https://t.me/paymentchanneluta',0],['yt1','▶️','YouTube 1','Subscribe, submit your task & claim your reward!','https://youtube.com/@cryptotech2.1?si=Se0lLUv35lh1wVTn',1],['yt2','▶️','YouTube 2','Subscribe, submit your task & claim your reward!','https://youtube.com/@noor-e-eman-j4x?si=c2J3wV8q8aTyg1GF',1]];
+const TK=[['tg2','✈️','Join Telegram','','https://t.me/paymentchanneluta',0],['yt1','▶️','YouTube 1','Subscribe, submit your task & claim your reward!','https://youtube.com/@cryptotech2.1?si=Se0lLUv35lh1wVTn',1],['yt2','▶️','YouTube 2','Subscribe, submit your task & claim your reward!','https://youtube.com/@noor-e-eman-j4x?si=c2J3wV8q8aTyg1GF',1],['wa1','💬','WhatsApp Channel','Join the channel, submit your task & claim your reward!','https://whatsapp.com/channel/0029VbD5A2Q3LdQREXOzuk3i',1]];
+
+const RW=id=>CFG.rw[id]||CFG.task;   // per-task reward
 
 /* ================= HELPERS ================= */
 const $=id=>document.getElementById(id), sleep=ms=>new Promise(r=>setTimeout(r,ms));
@@ -346,12 +348,12 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)flush();els
 function tasks(){const pend=S.proof?S.proof.task:null;
  $('tk').innerHTML=TK.map(k=>{const id=k[0];let tx,cls='';
   if(S.tasks&&S.tasks[id]){tx='Claimed';cls='gh'}else if(!k[5])tx=task[id]==='C'?'Check':'Start';else if(pend===id){tx='Claim';cls='gd'}else if(pend){tx='Locked';cls='gh'}else tx=task[id]==='O'?'Submit':'Open';
-  return"<div class='row'><div class='ic'>"+k[1]+"</div><div class='g'><b>"+k[2]+"</b><small>+500 $PEPE</small>"+(k[3]?"<small>"+k[3]+"</small>":"")+"</div><button class='btn "+cls+"' "+(tx==='Claimed'||tx==='Locked'?'disabled':'')+" data-k='"+id+"'>"+tx+"</button></div>"}).join('');
- const t=S.total,n=S.tasks?Object.keys(S.tasks).length:0;
- $('badges').innerHTML=[['🐸 First tap',t>0],['🔥 5K',t>=5000],['💎 50K',t>=5e4],['🏅 Rank 3',lvl()>=2],['👥 Squad 4',refs().length>=4],['✅ All tasks',n>=3]].map(b=>"<span class='badge "+(b[1]?'on':'')+"'>"+b[0]+"</span>").join('')}
+  return"<div class='row'><div class='ic'>"+k[1]+"</div><div class='g'><b>"+k[2]+"</b><small>+"+RW(id)+" $PEPE</small>"+(k[3]?"<small>"+k[3]+"</small>":"")+"</div><button class='btn "+cls+"' "+(tx==='Claimed'||tx==='Locked'?'disabled':'')+" data-k='"+id+"'>"+tx+"</button></div>"}).join('');
+ const t=S.total,n=S.tasks?Object.keys(S.tasks).filter(x=>S.tasks[x]).length:0;
+ $('badges').innerHTML=[['🐸 First tap',t>0],['🔥 5K',t>=5000],['💎 50K',t>=5e4],['🏅 Rank 3',lvl()>=2],['👥 Squad 4',refs().length>=4],['✅ All tasks',n>=TK.length]].map(b=>"<span class='badge "+(b[1]?'on':'')+"'>"+b[0]+"</span>").join('')}
 $('tk').onclick=async e=>{const b=e.target.closest('[data-k]');if(!b||busy)return;const k=TK.find(x=>x[0]===b.dataset.k),id=k[0];
  if(!S.isVerified){$('vs').style.display='flex';return}
- const pend=S.proof?S.proof.task:null,done=()=>reward('Mission reward: <b>+500 $PEPE</b> added to your balance.');
+ const pend=S.proof?S.proof.task:null,done=()=>reward('Mission reward: <b>+'+CFG.task+' $PEPE</b> added to your balance.');
  if(!k[5]){if(task[id]!=='C'){openLink(k[4]);task[id]='C';return tasks()}
   busy=true;const r=await api('/api/task',{taskId:id});busy=false;if(!r.ok)return toast(r.error||'Error');setState(r.data);return done()}
  if(pend===id){busy=true;const r=await api('/api/yt/claim',{taskId:id});busy=false;if(!r.ok){toast(r.error||'Error');if(r.data)setState(r.data);return}task[id]=null;setState(r.data);return done()}
