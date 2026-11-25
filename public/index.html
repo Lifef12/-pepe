@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- Monetag SDK (Telegram Mini App ads) -->
+<script src='//libtl.com/sdk.js' data-zone='12347245' data-sdk='show_12347245'></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
 <title>$PEPE Rewards</title>
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' https://telegram.org; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src https:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' https:; frame-src https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src https:; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap">
@@ -202,6 +204,22 @@ nav a.on{--ic:#fff;--ib:#075c3d;color:#fff;background:linear-gradient(180deg,#11
 </div></nav>
 
 <script>
+/* ================= MONETAG ADS ================= */
+// Rewarded interstitial: resolves true if ad was watched, false if unavailable/failed (never blocks the app)
+function showRewardedAd(){return new Promise(res=>{try{
+  if(typeof show_12347245!=='function')return res(false);
+  show_12347245().then(()=>res(true)).catch(()=>res(false));
+}catch(e){res(false)}})}
+// Automatic popup ad when the user switches tabs (max 1 per 2 minutes, never during the first 30s)
+let lastAutoAd=Date.now()-90000;
+function autoAd(){const n=Date.now();if(n-lastAutoAd<120000||typeof show_12347245!=='function')return;lastAutoAd=n;
+  try{const p=show_12347245('pop');if(p&&p.catch)p.catch(()=>{})}catch(e){}}
+// In-app interstitial: automatic ads (3 ads / 6 min, 30s apart, first after 5s)
+window.addEventListener('load',()=>{try{
+  if(typeof show_12347245==='function')show_12347245({type:'inApp',inAppSettings:{frequency:3,capping:0.1,interval:30,timeout:5,everyPage:false}});
+}catch(e){}});
+</script>
+<script>
 /* ================= CONFIG ================= */
 const API_BASE='https://pepe-1-f2ra.onrender.com';   // Render server
 const BOT='PepeRewardsTg_Bot', SUP='https://t.me/AlexMorgan1101';
@@ -355,20 +373,20 @@ $('tk').onclick=async e=>{const b=e.target.closest('[data-k]');if(!b||busy)retur
  if(!S.isVerified){$('vs').style.display='flex';return}
  const pend=S.proof?S.proof.task:null,done=()=>reward('Mission reward: <b>+'+CFG.task+' $PEPE</b> added to your balance.');
  if(!k[5]){if(task[id]!=='C'){openLink(k[4]);task[id]='C';return tasks()}
-  busy=true;const r=await api('/api/task',{taskId:id});busy=false;if(!r.ok)return toast(r.error||'Error');setState(r.data);return done()}
- if(pend===id){busy=true;const r=await api('/api/yt/claim',{taskId:id});busy=false;if(!r.ok){toast(r.error||'Error');if(r.data)setState(r.data);return}task[id]=null;setState(r.data);return done()}
+  busy=true;await showRewardedAd();const r=await api('/api/task',{taskId:id});busy=false;if(!r.ok)return toast(r.error||'Error');setState(r.data);return done()}
+ if(pend===id){busy=true;await showRewardedAd();const r=await api('/api/yt/claim',{taskId:id});busy=false;if(!r.ok){toast(r.error||'Error');if(r.data)setState(r.data);return}task[id]=null;setState(r.data);return done()}
  if(task[id]!=='O'){openLink(k[4]);task[id]='O';return tasks()}
  busy=true;const r=await api('/api/yt/submit',{taskId:id});busy=false;if(!r.ok){toast(r.error||'Error');if(r.data)setState(r.data);return}task[id]=null;setState(r.data);toast('Submitted! Now tap Claim.')};
 
 function ci(){const n=S.checkin.streak%7,cl=S.checkin.claimed;
  $('days').innerHTML=CFG.checkin.map((v,i)=>"<div class='d "+(i<n||(cl&&i===n-1)?'done':'')+(i===n&&!cl?' now':'')+"'>D"+(i+1)+"<b>"+cf(v)+"</b></div>").join('');
  $('ci').disabled=cl;$('ci').textContent=cl?'Come back tomorrow':'Claim '+cf(CFG.checkin[n])}
-$('ci').onclick=async()=>{if(busy)return;busy=true;const r=await api('/api/checkin');busy=false;if(!r.ok)return toast(r.error||'Error');setState(r.data);reward('Daily bonus: <b>+'+cf(+r.amount||0)+' $PEPE</b> is now added.')};
+$('ci').onclick=async()=>{if(busy)return;busy=true;await showRewardedAd();const r=await api('/api/checkin');busy=false;if(!r.ok)return toast(r.error||'Error');setState(r.data);reward('Daily bonus: <b>+'+cf(+r.amount||0)+' $PEPE</b> is now added.')};
 
 
 let ang=0;
 function sp(){$('spin').disabled=S.spinDone;$('spin').textContent=S.spinDone?'Done ✓':'Spin free'}
-$('spin').onclick=async()=>{if(busy||S.spinDone)return;busy=true;$('spin').disabled=true;const r=await api('/api/spin');if(!r.ok){busy=false;toast(r.error||'Error');if(r.data)setState(r.data);return}
+$('spin').onclick=async()=>{if(busy||S.spinDone)return;busy=true;$('spin').disabled=true;await showRewardedAd();const r=await api('/api/spin');if(!r.ok){busy=false;toast(r.error||'Error');if(r.data)setState(r.data);return}
  const ix=CFG.wheel.map((v,j)=>v===r.amount?j:-1).filter(j=>j>=0),i=ix.length?ix[Math.floor(Math.random()*ix.length)]:0;
  ang=(Math.floor(ang/360)+6)*360-(i*45+22.5);$('wheel').style.transform='rotate('+ang+'deg)';
  setTimeout(()=>{busy=false;setState(r.data);reward('Lucky wheel: <b>+'+cf(+r.amount||0)+' $PEPE</b> is now added.')},3300)};
@@ -404,7 +422,7 @@ $('vb').onclick=async()=>{const b=$('vb');b.textContent='Checking...';b.disabled
  chStatus(null);setState(r.data);$('vs').style.display='none';go('home');markSeen();toast(r.joinBonus?'Verified! Joining bonus +200 $PEPE added':'Verification successful!')};
 
 /* ================= NAV / THEME / MENU ================= */
-function go(t){document.querySelectorAll('nav a,.tab').forEach(x=>x.classList.remove('on'));document.querySelector('nav a[data-t="'+t+'"]').classList.add('on');$('t-'+t).classList.add('on');scrollTo(0,0);if(t==='rank'||t==='wallet')refresh()}
+function go(t){document.querySelectorAll('nav a,.tab').forEach(x=>x.classList.remove('on'));document.querySelector('nav a[data-t="'+t+'"]').classList.add('on');$('t-'+t).classList.add('on');scrollTo(0,0);if(t==='rank'||t==='wallet')refresh();autoAd()}
 document.querySelectorAll('nav a').forEach(a=>a.onclick=()=>go(a.dataset.t));
 async function refresh(){if(!S||!S.isVerified||document.hidden||pending||inflight||tapBusy||busy)return;const r=await api('/api/me');if(r.ok)setState(r.data)}
 setInterval(()=>{if($('t-rank').classList.contains('on'))refresh()},15000);
