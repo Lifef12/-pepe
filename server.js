@@ -28,7 +28,7 @@ const BOT_USERNAME = 'PepeRewardsTg_Bot';
 const fmtD = n => Number(n || 0).toLocaleString('en-US', { maximumFractionDigits: 2 });
 
 const TASK_REWARD = 300;              // default per task
-const TASK_REWARDS = { tg2: 300, yt1: 300, yt2: 300, wa1: 300 };   // per-task reward
+const TASK_REWARDS = { tc1: 300, tc2: 300 };   // per-task reward
 const rewardFor = id => TASK_REWARDS[id] || TASK_REWARD;
 const REF_BONUS = 600;                // per verified friend
 const JOIN_BONUS = 200;               // pehli baar verify par
@@ -52,23 +52,17 @@ const MAX_ENERGY = 500;
 const REGEN = 0.1;                    // energy / second
 const MAX_TPS = 14;                   // insani limit: taps / second
 
-const YT_CLAIM_DELAY = 10 * 1000;     // Submit ke kitni der baad Claim
-
 // ---------- CHANNELS ----------
 // id = frontend ke data-id se match (c1 / c3). YouTube / WhatsApp ka server check nahi ho sakta.
 const CHANNEL_UPDATES = { key: 'c1', id: '@Bonk_official', name: 'Official Updates Channel', url: 'https://t.me/Bonk_official' };
 const CHANNEL_PAYOUTS = { key: 'c3', id: '@bonk_taping', name: 'Official Payouts Channel', url: 'https://t.me/bonk_taping' };
 const VERIFY_CHANNELS = [CHANNEL_UPDATES, CHANNEL_PAYOUTS];
 
-// Telegram task (bot ko @paymentchanneluta me admin banana zaroori)
-const TASK_CHANNEL = { id: '@paymentchanneluta', name: 'Telegram Task Channel' };
+// Telegram channel tasks (bot dono channels me admin hona zaroori). Frontend task id = key.
+const TASK_CHANNELS = { tc1: '@Bonk_official', tc2: '@bonk_taping' };
 
 // Har paid withdraw yahan auto post hota hai
 const PAYMENT_CHANNEL = '@bonk_taping';
-
-// Open -> Submit -> Claim flow wale tasks (YouTube + WhatsApp)
-const YT_TASKS = ['yt1', 'yt2', 'wa1'];
-const WA_CHANNEL_URL = 'https://whatsapp.com/channel/0029VbD5A2Q3LdQREXOzuk3i';
 
 const WELCOME_IMG = process.env.WELCOME_IMG !== undefined ? process.env.WELCOME_IMG : '';
 const WELCOME_TEXT = 'Hello, welcome to <b>$PEPE Rewards</b>! 🐸 Get ready for an exciting earning experience!\n\n' +
@@ -97,10 +91,8 @@ const UserSchema = new mongoose.Schema({
     isBanned: { type: Boolean, default: false },
     deviceOk: { type: Boolean, default: false },
     tasks: {
-        tg2: { type: Boolean, default: false },
-        yt1: { type: Boolean, default: false },
-        yt2: { type: Boolean, default: false },
-        wa1: { type: Boolean, default: false }
+        tc1: { type: Boolean, default: false },
+        tc2: { type: Boolean, default: false }
     },
     // tap + energy
     tapDay: { type: String, default: '' },
@@ -151,12 +143,6 @@ const PendingRequest = mongoose.model('PendingRequest', new mongoose.Schema({
     userId: { type: String, required: true, unique: true },
     amount: { type: Number, required: true },
     address: { type: String, required: true }
-}));
-
-const PendingClaim = mongoose.model('PendingClaim', new mongoose.Schema({
-    userId: { type: String, required: true, unique: true },
-    task: { type: String, required: true },
-    createdAt: { type: Number, default: Date.now }
 }));
 
 // ---------- MULTIPLE ACCOUNT DETECTION (1 device = 1 account) ----------
@@ -467,10 +453,8 @@ function publicUser(u, pending) {
             watched: Number(u.adsWatched) || 0
         },
         tasks: {
-            tg2: !!(u.tasks && u.tasks.tg2),
-            yt1: !!(u.tasks && u.tasks.yt1),
-            yt2: !!(u.tasks && u.tasks.yt2),
-            wa1: !!(u.tasks && u.tasks.wa1)
+            tc1: !!(u.tasks && u.tasks.tc1),
+            tc2: !!(u.tasks && u.tasks.tc2)
         },
         proof: pending ? { task: pending.task, status: 'ready' } : null,
         referrals: cleanReferrals(u.referrals),
@@ -494,8 +478,7 @@ async function leaderboardFor(u) {
 
 // Team DB se banti hai: sirf VERIFIED friends dikhte hain
 async function userView(u) {
-    const p = await PendingClaim.findOne({ userId: u.id });
-    const view = publicUser(u, p);
+    const view = publicUser(u, null);
     const paid = new Map(cleanReferrals(u.referrals).map(r => [r.id, r]));
     const team = await User.find({ referredBy: u.id, isVerified: true }, { id: 1, createdAt: 1 })
         .sort({ createdAt: -1 }).limit(500).lean();
@@ -801,76 +784,26 @@ app.post('/api/ad/claim', auth, wrap(async (req, res) => {
     res.json({ ok: true, data: await userView(done), reward: AD_REWARD });
 }));
 
-// ---------- TELEGRAM TASK (membership server check karta hai) ----------
+// ---------- TELEGRAM CHANNEL TASKS (membership server check karta hai) ----------
 app.post('/api/task', auth, wrap(async (req, res) => {
     const u = req.user;
     const taskId = String(req.body.taskId || '');
-    if (taskId !== 'tg2') return res.json({ ok: false, error: 'Invalid task' });
+    if (!Object.prototype.hasOwnProperty.call(TASK_CHANNELS, taskId)) return res.json({ ok: false, error: 'Invalid task' });
     if (!u.isVerified) return res.json({ ok: false, error: 'Please verify channels first.' });
 
-    const m = await isMember(TASK_CHANNEL.id, u.id);
+    const m = await isMember(TASK_CHANNELS[taskId], u.id);
     if (m === null) return res.json({ ok: false, error: 'Could not verify right now, please try again shortly' });
     if (!m) return res.json({ ok: false, error: 'Please join the channel first!' });
 
+    const key = `tasks.${taskId}`;
     const done = await User.findOneAndUpdate(
-        { id: u.id, 'tasks.tg2': { $ne: true } },
-        { $set: { 'tasks.tg2': true }, $inc: earn(rewardFor('tg2')) },
+        { id: u.id, [key]: { $ne: true } },
+        { $set: { [key]: true }, $inc: earn(rewardFor(taskId)) },
         { new: true }
     );
     if (!done) return res.json({ ok: false, error: 'Task already claimed' });
     res.json({ ok: true, data: await userView(done) });
 }));
-
-// ---------- YOUTUBE + WHATSAPP TASKS (Open -> Submit -> Claim) ----------
-async function ytSubmit(req, res) {
-    const u = req.user;
-    const taskId = String(req.body.taskId || '');
-    if (!YT_TASKS.includes(taskId)) return res.json({ ok: false, error: 'Invalid task' });
-
-    const guard = await telegramGuard(u);
-    if (guard) return res.json({ ok: false, error: guard });
-
-    if (u.tasks && u.tasks[taskId]) return res.json({ ok: false, error: 'Task already claimed' });
-
-    const existing = await PendingClaim.findOne({ userId: u.id });
-    if (existing) {
-        if (existing.task === taskId) return res.json({ ok: true, alreadySubmitted: true, data: await userView(u) });
-        return res.json({ ok: false, error: 'Please claim your pending reward first.', data: await userView(u) });
-    }
-
-    try { await PendingClaim.create({ userId: u.id, task: taskId, createdAt: Date.now() }); }
-    catch (e) { return res.json({ ok: false, error: 'Please claim your pending reward first.' }); }
-    res.json({ ok: true, data: await userView(u) });
-}
-
-async function ytClaim(req, res) {
-    const u = req.user;
-    const taskId = String(req.body.taskId || '');
-
-    const guard = await telegramGuard(u);
-    if (guard) return res.json({ ok: false, error: guard });
-
-    const pending = await PendingClaim.findOne({ userId: u.id });
-    if (!pending || (taskId && pending.task !== taskId)) return res.json({ ok: false, error: 'Submit the task first' });
-
-    const wait = pending.createdAt + YT_CLAIM_DELAY - Date.now();
-    if (wait > 0) return res.json({ ok: false, error: `Please wait ${Math.ceil(wait / 1000)}s and try again.` });
-
-    const pr = await PendingClaim.findOneAndDelete({ userId: u.id, task: pending.task });
-    if (!pr) return res.json({ ok: false, error: 'Submit the task first' });
-
-    const key = `tasks.${pr.task}`;
-    const done = await User.findOneAndUpdate(
-        { id: u.id, [key]: { $ne: true } },
-        { $set: { [key]: true }, $inc: earn(rewardFor(pr.task)) },
-        { new: true }
-    );
-    if (!done) return res.json({ ok: false, error: 'Task already claimed' });
-    res.json({ ok: true, data: await userView(done) });
-}
-
-app.post('/api/yt/submit', auth, wrap(ytSubmit));
-app.post('/api/yt/claim', auth, wrap(ytClaim));
 
 // ---------- WITHDRAW ($PEPE BEP-20) ----------
 const adminButtons = reqId => ({ inline_keyboard: [[{ text: '✅ Approve', callback_data: `approve_${reqId}` }, { text: '❌ Reject', callback_data: `reject_${reqId}` }]] });
