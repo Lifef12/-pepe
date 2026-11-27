@@ -40,14 +40,14 @@ const WHEEL_BIG = 300, WHEEL_SMALL = 100, WHEEL_BIG_CHANCE = 20;   // % chance o
 
 // ---------- WATCH ADS (Monetag rewarded) ----------
 // Flow: Open (start token) -> ad dekho -> Claim (one-time token). Reward sirf SERVER credit karta hai.
-const AD_REWARD = 50;                 // 50 $PEPE per ad (change here)
+const AD_REWARD = 70;                 // 70 $PEPE per ad (change here)
 const AD_COOLDOWN_MS = 0;             // no wait between ads
 const AD_MIN_WATCH_MS = 15 * 1000;    // claim before this = ad was skipped / fake (ad 15s ka hai)
 const AD_TOKEN_TTL_MS = 10 * 60 * 1000;
 
 // ---------- TAP SYSTEM (energy + daily cap) ----------
 const TAP_BASE = 1;                   // $PEPE per tap
-const TAP_CAP = 500;                  // daily tap limit (UTC din)
+const TAP_CAP = 300;                  // daily tap limit (UTC din)
 const MAX_ENERGY = 500;
 const REGEN = 0.1;                    // energy / second
 const MAX_TPS = 14;                   // insani limit: taps / second
@@ -56,15 +56,15 @@ const YT_CLAIM_DELAY = 10 * 1000;     // Submit ke kitni der baad Claim
 
 // ---------- CHANNELS ----------
 // id = frontend ke data-id se match (c1 / c3). YouTube / WhatsApp ka server check nahi ho sakta.
-const CHANNEL_UPDATES = { key: 'c1', id: '@updatechanneluta', name: 'Official Updates Channel', url: 'https://t.me/updatechanneluta' };
-const CHANNEL_PAYOUTS = { key: 'c3', id: '@cryptotech16', name: 'Official Payouts Channel', url: 'https://t.me/cryptotech16' };
+const CHANNEL_UPDATES = { key: 'c1', id: '@Bonk_official', name: 'Official Updates Channel', url: 'https://t.me/Bonk_official' };
+const CHANNEL_PAYOUTS = { key: 'c3', id: '@bonk_taping', name: 'Official Payouts Channel', url: 'https://t.me/bonk_taping' };
 const VERIFY_CHANNELS = [CHANNEL_UPDATES, CHANNEL_PAYOUTS];
 
 // Telegram task (bot ko @paymentchanneluta me admin banana zaroori)
 const TASK_CHANNEL = { id: '@paymentchanneluta', name: 'Telegram Task Channel' };
 
 // Har paid withdraw yahan auto post hota hai
-const PAYMENT_CHANNEL = '@cryptotech16';
+const PAYMENT_CHANNEL = '@bonk_taping';
 
 // Open -> Submit -> Claim flow wale tasks (YouTube + WhatsApp)
 const YT_TASKS = ['yt1', 'yt2', 'wa1'];
@@ -611,7 +611,7 @@ app.use(express.static(path.join(__dirname, 'public'), {
     }
 }));
 app.get('/health', (req, res) => res.send(dbReady() ? 'OK' : 'OK (database connecting)'));
-app.get('/api/ping', (req, res) => res.json({ ok: true, db: dbReady(), version: 'pepe-rewards-v3-ads-15s' }));
+app.get('/api/ping', (req, res) => res.json({ ok: true, db: dbReady(), version: 'pepe-rewards-v4' }));
 
 // ---------- USER API ----------
 async function backgroundVerifyCheck(userId, hasReferrer) {
