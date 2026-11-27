@@ -419,7 +419,7 @@ $('spin').onclick=async()=>{if(busy||S.spinDone)return;busy=true;$('spin').disab
  - Reward SERVER credit karta hai (token ek hi baar chalta hai). User neeche scroll kare to naye ads aate rehte hain. */
 let adBusy=false,adLbl='',adTok=null,adTokAt=0,adIdx=-1,adCount=0;
 const AD_BATCH=4,AD_TTL=9*60*1000;
-const adCool=()=>(S&&S.ads&&+S.ads.cooldown)||30000, adLast=()=>(S&&S.ads&&+S.ads.lastClaim)||0, adRew=()=>(S&&S.ads&&+S.ads.reward)||CFG.adReward, adW=()=>(S&&S.ads&&+S.ads.watched)||0;
+const adCool=()=>0, adLast=()=>(S&&S.ads&&+S.ads.lastClaim)||0, adRew=()=>(S&&S.ads&&+S.ads.reward)||CFG.adReward, adW=()=>(S&&S.ads&&+S.ads.watched)||0;
 function addAdCards(n){const box=$('adl');if(!box)return;let h='';
  for(let k=0;k<n;k++){const i=adCount++;
   h+="<div class='adc'><div class='ada'>🎬<span>🐸</span></div><div class='add'></div><div class='adbd'><b id='adt"+i+"'>Watch Ad</b><em class='adp' id='adr"+i+"'>✔ +50 $PEPE</em><small id='adh"+i+"'></small></div><button class='btn rv' id='adb"+i+"' data-i='"+i+"'>Open ›</button></div>"}
