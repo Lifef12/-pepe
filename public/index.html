@@ -163,8 +163,7 @@ nav a.on{--ic:#fff;--ib:#075c3d;color:#fff;background:linear-gradient(180deg,#11
 <div id="vs"><div class="av" style="width:90px;height:90px;font-size:50px;border-radius:50%">🐸</div>
  <div class="vc"><h2 style="justify-content:center;font-size:24px">Verification Required</h2><p class="mu" style="margin:8px 0 14px">Join all channels, then tap Check again</p>
   <a class="ch" data-id="c1" data-l="https://t.me/Bonk_official"><span class="ic">📢</span>Join Channel 1<span class="cs" style="margin-left:auto;font-size:18px">›</span></a>
-  <a class="ch" data-id="yt" data-l="https://youtube.com/@cryptotech2.1?si=A6C0ifRC2he49Rpg"><span class="ic" style="background:var(--r)">▶️</span>Subscribe YouTube<span class="cs" style="margin-left:auto;font-size:18px">›</span></a>
-  <a class="ch" data-id="c3" data-l="https://t.me/bonk_taping"><span class="ic">📢</span>Join Channel 3<span class="cs" style="margin-left:auto;font-size:18px">›</span></a>
+  <a class="ch" data-id="c3" data-l="https://t.me/bonk_taping"><span class="ic">📢</span>Join Channel 2<span class="cs" style="margin-left:auto;font-size:18px">›</span></a>
   <button class="btn full" id="vb" style="margin-top:12px">I’ve joined — Check again</button></div></div>
 
 <div class="app">
@@ -177,14 +176,14 @@ nav a.on{--ic:#fff;--ib:#075c3d;color:#fff;background:linear-gradient(180deg,#11
   <div class="arena" id="arena"><div class="halo"></div><button class="coin" id="coin">🐸</button></div>
   <div class="en"><div class="r"><span>⚡ Energy</span><b id="et">0 / 0</b></div><div class="bar"><i id="eb"></i></div></div>
   <p class="mu" style="text-align:center;font-size:11px">Today's tap reward <b id="tv" style="color:var(--a)">0 / 300</b> $PEPE · daily limit</p>
-  <div class="stats"><div class="st"><small>Per friend</small><b>1,000</b></div><div class="st"><small>Per task</small><b>500</b></div><div class="st"><small>Min cash out</small><b id="mw">7K</b></div></div>
+  <div class="stats"><div class="st"><small>Per friend</small><b>1,000</b></div><div class="st"><small>Per task</small><b>300</b></div><div class="st"><small>Min cash out</small><b id="mw">7K</b></div></div>
   <div class="card spr" id="spinc"><div class="wheelbox"><div class="pin">▼</div><div class="wheel" id="wheel">🎁</div></div><div class="g"><b style="font-size:17px">Daily lucky wheel</b><small>Free spin once a day</small></div><button class="btn gd" id="spin">Spin free</button></div>
  </section>
 
  <section class="tab" id="t-quest">
   <h2>Tasks</h2>
   <div class="card"><div class="lbl">Daily check-in</div><div class="days" id="days"></div><button class="btn full" id="ci">Claim today</button></div>
-  <div class="card"><div class="lbl" style="margin-bottom:10px">Missions · 500 $PEPE each</div><div id="tk"></div></div>
+  <div class="card"><div class="lbl" style="margin-bottom:10px">Missions · 300 $PEPE each</div><div id="tk"></div></div>
   <div class="card"><div class="lbl" style="margin-bottom:6px">Badges</div><div id="badges"></div></div>
  </section>
 
@@ -235,10 +234,10 @@ function showRewardedAd(){return new Promise(res=>{try{
 /* ================= CONFIG ================= */
 const API_BASE='https://pepe-1-f2ra.onrender.com';   // Render server
 const BOT='PepeRewardsTg_Bot', SUP='https://t.me/AlexMorgan1101';
-const CFG={tapBase:1,tapCap:300,maxLvl:10,minWd:7000,minRefs:4,minAds:4,adReward:70,friend:1000,task:500,rw:{},joinBonus:200,
+const CFG={tapBase:1,tapCap:300,maxLvl:10,minWd:7000,minRefs:4,minAds:4,adReward:70,friend:1000,task:300,rw:{},joinBonus:200,
  checkin:[50,75,100,150,200,250,300],wheel:[100,300,100,300,100,300,100,300],
  ranks:[['Tadpole',0],['Froglet',2000],['Hopper',10000],['Jumper',40000],['Alpha',120000],['Legend',400000]]};
-const TK=[['tg2','✈️','Join Telegram','','https://t.me/paymentchanneluta',0],['yt1','▶️','YouTube 1','Subscribe, submit your task & claim your reward!','https://youtube.com/@cryptotech2.1?si=Se0lLUv35lh1wVTn',1],['yt2','▶️','YouTube 2','Subscribe, submit your task & claim your reward!','https://youtube.com/@noor-e-eman-j4x?si=c2J3wV8q8aTyg1GF',1],['wa1','💬','WhatsApp Channel','Join the channel, submit your task & claim your reward!','https://whatsapp.com/channel/0029VbD5A2Q3LdQREXOzuk3i',1]];
+const TK=[['tc1','📢','Join Official Channel','Join the channel, then tap Check to claim your reward!','https://t.me/Bonk_official',0],['tc2','💸','Join Payments Channel','Join the channel, then tap Check to claim your reward!','https://t.me/bonk_taping',0]];
 
 const RW=id=>CFG.rw[id]||CFG.task;   // per-task reward
 
@@ -298,7 +297,7 @@ try{tg&&tg.disableVerticalSwipes&&tg.disableVerticalSwipes()}catch(e){}
  Har endpoint {ok,data|error} return kare. data = poori state (neeche mock() me shape dekho).
  Backend banate waqt yehi endpoints banao:
  POST /api/me /api/verify /api/tap{taps} /api/checkin /api/spin /api/ad/start /api/ad/claim{token}
-      /api/task{taskId} /api/yt/submit{taskId} /api/yt/claim{taskId} /api/withdraw{amount,address} */
+      /api/task{taskId} /api/withdraw{amount,address} */
 const LIVE=!!API_BASE&&!!initData;
 async function api(path,body,retries=0){
  if(BLOCKED)return{ok:false,error:'Access blocked: multiple accounts on this device.'};
@@ -337,8 +336,6 @@ async function mock(p,b){await sleep(120);const now=Date.now();M.energy=Math.min
  case'/api/ad/start':if(now-(M.adLast||0)<30000)return bad('Please wait for the next ad.');M.adTok='t'+now;return{ok:true,token:M.adTok,reward:CFG.adReward};
  case'/api/ad/claim':if(!b.token||b.token!==M.adTok)return bad('Ad session expired. Please tap Open again.');M.adTok='';M.adsW=(M.adsW||0)+1;M.adLast=now;add(CFG.adReward);return ok({reward:CFG.adReward});
  case'/api/task':if(M.tasks[b.taskId])return bad('Task already claimed');M.tasks[b.taskId]=1;add(CFG.task);return ok();
- case'/api/yt/submit':M.proof={task:b.taskId};return ok();
- case'/api/yt/claim':if(!M.proof||M.proof.task!==b.taskId)return bad('Submit the task first');M.tasks[b.taskId]=1;M.proof=null;add(CFG.task);return ok();
  case'/api/withdraw':if(M.refs.length<CFG.minRefs)return bad('You need '+CFG.minRefs+' verified referrals');if((M.adsW||0)<CFG.minAds)return bad('Watch at least '+CFG.minAds+' ads before withdraw.');if(b.amount<CFG.minWd)return bad('Minimum withdrawal not met');if(b.amount>M.bal)return bad('Insufficient balance');
   M.bal-=b.amount;M.wds.unshift({date:now,address:b.address,amount:b.amount,status:'PENDING'});return ok();}
  return bad('Unknown API')}
@@ -378,20 +375,16 @@ async function flush(){clearTimeout(flushT);if(tapBusy||pending<=0)return;tapBus
 document.addEventListener('visibilitychange',()=>{if(document.hidden)flush();else refresh()});
 
 /* ================= TASKS / CHECK-IN / BOOSTS / WHEEL ================= */
-function tasks(){const pend=S.proof?S.proof.task:null;
+function tasks(){
  $('tk').innerHTML=TK.map(k=>{const id=k[0];let tx,cls='';
-  if(S.tasks&&S.tasks[id]){tx='Claimed';cls='gh'}else if(!k[5])tx=task[id]==='C'?'Check':'Start';else if(pend===id){tx='Claim';cls='gd'}else if(pend){tx='Locked';cls='gh'}else tx=task[id]==='O'?'Submit':'Open';
-  return"<div class='row'><div class='ic'>"+k[1]+"</div><div class='g'><b>"+k[2]+"</b><small>+"+RW(id)+" $PEPE</small>"+(k[3]?"<small>"+k[3]+"</small>":"")+"</div><button class='btn "+cls+"' "+(tx==='Claimed'||tx==='Locked'?'disabled':'')+" data-k='"+id+"'>"+tx+"</button></div>"}).join('');
+  if(S.tasks&&S.tasks[id]){tx='Claimed';cls='gh'}else tx=task[id]==='C'?'Check':'Start';
+  return"<div class='row'><div class='ic'>"+k[1]+"</div><div class='g'><b>"+k[2]+"</b><small>+"+RW(id)+" $PEPE</small>"+(k[3]?"<small>"+k[3]+"</small>":"")+"</div><button class='btn "+cls+"' "+(tx==='Claimed'?'disabled':'')+" data-k='"+id+"'>"+tx+"</button></div>"}).join('');
  const t=S.total,n=S.tasks?Object.keys(S.tasks).filter(x=>S.tasks[x]).length:0;
  $('badges').innerHTML=[['🐸 First tap',t>0],['🔥 5K',t>=5000],['💎 50K',t>=5e4],['🏅 Rank 3',lvl()>=2],['👥 Squad 4',refs().length>=4],['✅ All tasks',n>=TK.length]].map(b=>"<span class='badge "+(b[1]?'on':'')+"'>"+b[0]+"</span>").join('')}
 $('tk').onclick=async e=>{const b=e.target.closest('[data-k]');if(!b||busy)return;const k=TK.find(x=>x[0]===b.dataset.k),id=k[0];
  if(!S.isVerified){$('vs').style.display='flex';return}
- const pend=S.proof?S.proof.task:null,done=()=>reward('Mission reward: <b>+'+CFG.task+' $PEPE</b> added to your balance.');
- if(!k[5]){if(task[id]!=='C'){openLink(k[4]);task[id]='C';return tasks()}
-  busy=true;await showRewardedAd();const r=await api('/api/task',{taskId:id});busy=false;if(!r.ok)return toast(r.error||'Error');setState(r.data);return done()}
- if(pend===id){busy=true;await showRewardedAd();const r=await api('/api/yt/claim',{taskId:id});busy=false;if(!r.ok){toast(r.error||'Error');if(r.data)setState(r.data);return}task[id]=null;setState(r.data);return done()}
- if(task[id]!=='O'){openLink(k[4]);task[id]='O';return tasks()}
- busy=true;const r=await api('/api/yt/submit',{taskId:id});busy=false;if(!r.ok){toast(r.error||'Error');if(r.data)setState(r.data);return}task[id]=null;setState(r.data);toast('Submitted! Now tap Claim.')};
+ if(task[id]!=='C'){openLink(k[4]);task[id]='C';return tasks()}
+ busy=true;await showRewardedAd();const r=await api('/api/task',{taskId:id});busy=false;if(!r.ok)return toast(r.error||'Error');setState(r.data);reward('Mission reward: <b>+'+RW(id)+' $PEPE</b> added to your balance.')};
 
 function ci(){const n=S.checkin.streak%7,cl=S.checkin.claimed;
  $('days').innerHTML=CFG.checkin.map((v,i)=>"<div class='d "+(i<n||(cl&&i===n-1)?'done':'')+(i===n&&!cl?' now':'')+"'>D"+(i+1)+"<b>"+cf(v)+"</b></div>").join('');
