@@ -34,8 +34,16 @@ const REF_BONUS = 600;                // per verified friend
 const JOIN_BONUS = 200;               // pehli baar verify par
 const MIN_WITHDRAW = 7000;            // minimum withdraw
 const MIN_REFS = 4;                   // withdraw ke liye kam az kam itne VERIFIED referrals
+const MIN_ADS = 4;                    // withdraw ke liye kam az kam itne Watch-Ads (claimed)
 const CHECKIN = [50, 75, 100, 150, 200, 250, 300];   // 7 din ka daily check-in
 const WHEEL_BIG = 300, WHEEL_SMALL = 100, WHEEL_BIG_CHANCE = 20;   // % chance of 300
+
+// ---------- WATCH ADS (Monetag rewarded) ----------
+// Flow: Open (start token) -> ad dekho -> Claim (one-time token). Reward sirf SERVER credit karta hai.
+const AD_REWARD = 50;                 // 50 $PEPE per ad (change here)
+const AD_COOLDOWN_MS = 30 * 1000;     // minimum gap between two rewarded ads per user
+const AD_MIN_WATCH_MS = 2 * 1000;     // claim before this = ad was skipped / fake
+const AD_TOKEN_TTL_MS = 10 * 60 * 1000;
 
 // ---------- TAP SYSTEM (energy + daily cap) ----------
 const TAP_BASE = 1;                   // $PEPE per tap
@@ -110,6 +118,11 @@ const UserSchema = new mongoose.Schema({
     joinBonus: { type: Boolean, default: false },
     referrals: { type: Array, default: [] },
     totalWithdrawn: { type: Number, default: 0 },
+    // watch ads
+    adTok: { type: String, default: '' },
+    adTokAt: { type: Number, default: 0 },
+    adLastClaim: { type: Number, default: 0 },
+    adsWatched: { type: Number, default: 0 },
     withdrawals: { type: Array, default: [] },
     createdAt: { type: Number, default: Date.now }
 });
@@ -118,12 +131,19 @@ UserSchema.index({ referredBy: 1 });
 UserSchema.index({ total: -1 });
 const User = mongoose.model('User', UserSchema);
 
+// Purane users ke documents me missing fields theek karta hai (har start par, safe).
+// AD FIX: ad fields (adLastClaim, adTokAt, adsWatched, adTok) purane users me nahi hote, jis se claim query match nahi karti.
 mongoose.connection.on('open', async () => {
     try {
         const a = await User.collection.updateMany({ referrals: { $not: { $type: 'array' } } }, { $set: { referrals: [] } });
         const b = await User.collection.updateMany({ withdrawals: { $not: { $type: 'array' } } }, { $set: { withdrawals: [] } });
         console.log('🛠 Array fields fixed -> referrals:', a.modifiedCount, '| withdrawals:', b.modifiedCount);
-    } catch (e) { console.log('Array fix error:', e.message); }
+        const c1 = await User.collection.updateMany({ adLastClaim: { $exists: false } }, { $set: { adLastClaim: 0 } });
+        const c2 = await User.collection.updateMany({ adTokAt: { $exists: false } }, { $set: { adTokAt: 0 } });
+        const c3 = await User.collection.updateMany({ adsWatched: { $exists: false } }, { $set: { adsWatched: 0 } });
+        const c4 = await User.collection.updateMany({ adTok: { $exists: false } }, { $set: { adTok: '' } });
+        console.log('🛠 Ad fields fixed ->', c1.modifiedCount, c2.modifiedCount, c3.modifiedCount, c4.modifiedCount);
+    } catch (e) { console.log('Array/ad fix error:', e.message); }
 });
 
 const PendingRequest = mongoose.model('PendingRequest', new mongoose.Schema({
@@ -438,7 +458,14 @@ function publicUser(u, pending) {
         tapCap: TAP_CAP,
         checkin: ci,
         spinDone: u.spinDay === utcDay(),
-        rules: { minWithdraw: MIN_WITHDRAW, minRefs: MIN_REFS },
+        rules: { minWithdraw: MIN_WITHDRAW, minRefs: MIN_REFS, minAds: MIN_ADS },
+        // Watch Ads info: reward, cooldown, last claim time (frontend countdown ke liye), total watched
+        ads: {
+            reward: AD_REWARD,
+            cooldown: AD_COOLDOWN_MS,
+            lastClaim: Number(u.adLastClaim) || 0,
+            watched: Number(u.adsWatched) || 0
+        },
         tasks: {
             tg2: !!(u.tasks && u.tasks.tg2),
             yt1: !!(u.tasks && u.tasks.yt1),
@@ -489,17 +516,19 @@ async function userStats(userId) {
     const id = String(userId);
     const [refs, u] = await Promise.all([
         User.countDocuments({ referredBy: id, isVerified: true }),
-        User.findOne({ id }, { totalWithdrawn: 1, withdrawals: 1 }).lean()
+        User.findOne({ id }, { totalWithdrawn: 1, withdrawals: 1, adsWatched: 1 }).lean()
     ]);
     const w = Array.isArray(u && u.withdrawals) ? u.withdrawals : [];
     return {
         refs,
+        ads: (u && Number(u.adsWatched)) || 0,
         totalWithdrawn: (u && Number(u.totalWithdrawn)) || 0,
         paidCount: w.filter(x => x && String(x.status).toUpperCase() === 'PAID').length
     };
 }
 const statsLine = s =>
     `👥 Verified Referrals: <b>${s.refs}</b>\n` +
+    `🎬 Ads Watched: <b>${s.ads || 0}</b>\n` +
     `📤 Total Withdrawn: <b>${fmtD(s.totalWithdrawn)} ${COIN}</b> (${s.paidCount} paid)`;
 
 // ---------- REFERRAL CREDIT ----------
@@ -582,7 +611,7 @@ app.use(express.static(path.join(__dirname, 'public'), {
     }
 }));
 app.get('/health', (req, res) => res.send(dbReady() ? 'OK' : 'OK (database connecting)'));
-app.get('/api/ping', (req, res) => res.json({ ok: true, db: dbReady(), version: 'pepe-rewards-v1' }));
+app.get('/api/ping', (req, res) => res.json({ ok: true, db: dbReady(), version: 'pepe-rewards-v2-ads' }));
 
 // ---------- USER API ----------
 async function backgroundVerifyCheck(userId, hasReferrer) {
@@ -719,6 +748,59 @@ app.post('/api/spin', auth, wrap(async (req, res) => {
     res.json({ ok: true, amount, data: await userView(done) });
 }));
 
+// ---------- WATCH ADS: start / claim ----------
+// start: user "Open" dabata hai -> one-time token milta hai, phir app ad dikhata hai.
+// claim: ad dekhne ke baad user "Claim" dabata hai -> token consume hota hai aur reward milta hai.
+app.post('/api/ad/start', auth, wrap(async (req, res) => {
+    const u = req.user;
+    if (!u.isVerified) return res.json({ ok: false, error: 'Please verify channels first.' });
+    const guard = await telegramGuard(u);
+    if (guard) return res.json({ ok: false, error: guard });
+
+    const now = Date.now();
+    const wait = (Number(u.adLastClaim) || 0) + AD_COOLDOWN_MS - now;
+    if (wait > 0) return res.json({ ok: false, error: 'Please wait ' + Math.ceil(wait / 1000) + 's for the next ad.' });
+
+    const tok = crypto.randomBytes(16).toString('hex');
+    await User.updateOne({ id: u.id }, { $set: { adTok: tok, adTokAt: now } });
+    res.json({ ok: true, token: tok, reward: AD_REWARD });
+}));
+
+app.post('/api/ad/claim', auth, wrap(async (req, res) => {
+    const u = req.user;
+    const tok = String(req.body.token || '');
+    if (!tok || tok.length > 64) return res.json({ ok: false, error: 'Invalid ad session.' });
+    const guard = await telegramGuard(u);
+    if (guard) return res.json({ ok: false, error: guard });
+
+    const now = Date.now();
+    // Purane users ke document me adLastClaim field nahi hota; missing field bhi allowed ($or + $exists:false).
+    const done = await User.findOneAndUpdate(
+        {
+            id: u.id,
+            adTok: tok,
+            adTokAt: { $lte: now - AD_MIN_WATCH_MS, $gte: now - AD_TOKEN_TTL_MS },
+            $or: [
+                { adLastClaim: { $exists: false } },
+                { adLastClaim: null },
+                { adLastClaim: { $lte: now - AD_COOLDOWN_MS } }
+            ]
+        },
+        { $set: { adTok: '', adLastClaim: now }, $inc: { ...earn(AD_REWARD), adsWatched: 1 } },
+        { new: true }
+    );
+    if (!done) {
+        const f = await User.findOne({ id: u.id }).select('adTok adTokAt adLastClaim').lean();
+        let msg = 'Ad was not completed. Please try again.';
+        if (!f || f.adTok !== tok) msg = 'Ad session expired. Please tap Open again.';
+        else if (now - (Number(f.adTokAt) || 0) < AD_MIN_WATCH_MS) msg = 'Ad closed too early. Please watch the ad fully.';
+        else if (now - (Number(f.adTokAt) || 0) > AD_TOKEN_TTL_MS) msg = 'Ad session expired. Please tap Open again.';
+        else if (now - (Number(f.adLastClaim) || 0) < AD_COOLDOWN_MS) msg = 'Please wait a few seconds before the next ad.';
+        return res.json({ ok: false, error: msg });
+    }
+    res.json({ ok: true, data: await userView(done), reward: AD_REWARD });
+}));
+
 // ---------- TELEGRAM TASK (membership server check karta hai) ----------
 app.post('/api/task', auth, wrap(async (req, res) => {
     const u = req.user;
@@ -820,6 +902,12 @@ app.post('/api/withdraw', auth, wrap(async (req, res) => {
     const refCount = await User.countDocuments({ referredBy: u.id, isVerified: true });
     if (refCount < MIN_REFS) {
         return res.json({ ok: false, error: `You need at least ${MIN_REFS} verified referrals to withdraw. You have ${refCount}.` });
+    }
+
+    // Kam az kam MIN_ADS Watch-Ads (claimed) zaroori
+    const adsDone = Number(u.adsWatched) || 0;
+    if (adsDone < MIN_ADS) {
+        return res.json({ ok: false, error: `Watch at least ${MIN_ADS} ads before withdraw. You watched ${adsDone}.` });
     }
 
     const guard = await telegramGuard(u);
@@ -1107,19 +1195,20 @@ app.get('/admin/dashboard', checkAdmin, wrap(async (req, res) => {
         User.countDocuments(),
         User.countDocuments({ isVerified: true }),
         PendingRequest.find({}).sort({ _id: -1 }),
-        User.aggregate([{ $group: { _id: null, bal: { $sum: '$balance' }, paid: { $sum: '$totalWithdrawn' } } }])
+        User.aggregate([{ $group: { _id: null, bal: { $sum: '$balance' }, paid: { $sum: '$totalWithdrawn' }, ads: { $sum: '$adsWatched' } } }])
     ]);
-    const s = agg[0] || { bal: 0, paid: 0 };
+    const s = agg[0] || { bal: 0, paid: 0, ads: 0 };
+    const totalAds = Number(s.ads) || 0;
     const whi = await tg('getWebhookInfo', {});
     const wh = whi.ok ? whi.result : {};
     const q = String(req.query.search || '').trim().slice(0, 64);
     const found = q ? await User.findOne({ $or: [{ id: q }, { username: q.startsWith('@') ? q : '@' + q }] }) : null;
 
     const pStats = await Promise.all(pending.map(r =>
-        userStats(r.userId).catch(() => ({ refs: 0, totalWithdrawn: 0, paidCount: 0 }))
+        userStats(r.userId).catch(() => ({ refs: 0, ads: 0, totalWithdrawn: 0, paidCount: 0 }))
     ));
 
-    const reqRows = pending.map((r, i) => `<tr><td>${esc(r.userId)}</td><td><b>${fmtD(r.amount)} ${COIN}</b></td><td>${pStats[i].refs}</td><td>${fmtD(pStats[i].totalWithdrawn)} (${pStats[i].paidCount})</td><td><code>${esc(r.address)}</code></td>
+    const reqRows = pending.map((r, i) => `<tr><td>${esc(r.userId)}</td><td><b>${fmtD(r.amount)} ${COIN}</b></td><td>${pStats[i].refs}</td><td>${pStats[i].ads}</td><td>${fmtD(pStats[i].totalWithdrawn)} (${pStats[i].paidCount})</td><td><code>${esc(r.address)}</code></td>
 <td><button class="b g" data-act="req" data-do="approve" data-id="${esc(r.reqId)}">Approve</button> <button class="b r" data-act="req" data-do="reject" data-id="${esc(r.reqId)}">Reject</button></td></tr>`).join('');
 
     let userBox = '';
@@ -1129,7 +1218,7 @@ app.get('/admin/dashboard', checkAdmin, wrap(async (req, res) => {
 <p>👤 <b>${esc(found.username)}</b> | ID: <code>${esc(found.id)}</code></p>
 <p>💰 Balance: <b>${fmtD(found.balance)} ${COIN}</b> | 🏆 Total earned: <b>${fmtD(found.total)}</b> | 📤 Total Withdrawn: <b>${fmtD(found.totalWithdrawn)} ${COIN}</b></p>
 <p>✅ Verified: ${found.isVerified ? 'Yes' : 'No'} | 🚫 Banned: ${found.isBanned ? 'Yes' : 'No'} | 👥 Referrals (verified): ${fs.refs} | Referred by: ${esc(found.referredBy || 'Direct')} | Ref credited: ${found.refCredited ? 'Yes' : 'No'} | Device allowed: ${found.deviceOk ? 'Yes' : 'No'}</p>
-<p>👆 Today's tap reward: ${tapToday(found)} / ${TAP_CAP} | 🏦 Wallet: <code>${esc(found.wallet || 'not linked')}</code></p>
+<p>👆 Today's tap reward: ${tapToday(found)} / ${TAP_CAP} | 🎬 Ads watched: ${Number(found.adsWatched) || 0} | 🏦 Wallet: <code>${esc(found.wallet || 'not linked')}</code></p>
 <div class="row"><input type="number" step="any" id="amt" placeholder="Amount (${COIN})">
 <button class="b g" data-act="bal" data-do="add" data-uid="${esc(found.id)}">+ Add</button>
 <button class="b r" data-act="bal" data-do="cut" data-uid="${esc(found.id)}">- Cut</button>
@@ -1161,8 +1250,10 @@ table{width:100%;border-collapse:collapse}th,td{padding:8px;text-align:left;bord
 <div class="st"><small>Verified Users</small><div>${verified}</div></div>
 <div class="st"><small>Users' Balance</small><div>${fmtD(s.bal)} ${COIN}</div></div>
 <div class="st"><small>Paid Out</small><div>${fmtD(s.paid)} ${COIN}</div></div>
-<div class="st"><small>Pending Requests</small><div>${pending.length}</div></div></div>
-<div class="card"><h3>⏳ Pending Withdrawal Requests</h3>${pending.length ? `<table><tr><th>User ID</th><th>Amount</th><th>Verified Refs</th><th>Total Withdrawn (paid #)</th><th>Wallet (BEP-20)</th><th>Action</th></tr>${reqRows}</table>` : '<p style="color:#8a96b5;font-size:12px">No pending requests.</p>'}</div>
+<div class="st"><small>Pending Requests</small><div>${pending.length}</div></div>
+<div class="st"><small>🎬 Total Ads Watched</small><div>${totalAds.toLocaleString('en-US')}</div></div>
+<div class="st"><small>Ads Reward Given</small><div>${fmtD(totalAds * AD_REWARD)} ${COIN}</div></div></div>
+<div class="card"><h3>⏳ Pending Withdrawal Requests</h3>${pending.length ? `<table><tr><th>User ID</th><th>Amount</th><th>Verified Refs</th><th>Ads</th><th>Total Withdrawn (paid #)</th><th>Wallet (BEP-20)</th><th>Action</th></tr>${reqRows}</table>` : '<p style="color:#8a96b5;font-size:12px">No pending requests.</p>'}</div>
 <div class="card"><h3>🔍 Search & Manage User</h3><form method="GET" class="row"><input name="search" placeholder="Telegram ID or @username" value="${esc(q)}"><button class="b">Search</button></form>${userBox}</div>
 <div class="card"><h3>🛠 Referral Repair</h3><p style="font-size:12px;color:#8a96b5;margin-bottom:10px">Missed referrals (user verified but referrer got no bonus) ko ek click me theek karo.</p><button class="b g" style="width:100%" data-act="rep">Repair All Referrals</button></div>
 <div class="card"><h3>📢 Broadcast</h3><textarea id="bc" rows="3" placeholder="Message to all users..."></textarea><button class="b" style="margin-top:10px;width:100%" data-act="bc">Send Broadcast</button></div>
