@@ -418,7 +418,7 @@ $('spin').onclick=async()=>{if(busy||S.spinDone)return;busy=true;$('spin').disab
  - Claim : ad poora hone ke baad wahi card "Claim" ban jata hai, user tap karke reward leta hai
  - Reward SERVER credit karta hai (token ek hi baar chalta hai). User neeche scroll kare to naye ads aate rehte hain. */
 let adBusy=false,adLbl='',adTok=null,adTokAt=0,adIdx=-1,adCount=0;
-const AD_BATCH=4,AD_TTL=9*60*1000;
+const AD_BATCH=4,AD_TTL=9*60*1000,AD_MIN_MS=15000;   // ad kam az kam 15 second dekhna lazmi
 const adCool=()=>0, adLast=()=>(S&&S.ads&&+S.ads.lastClaim)||0, adRew=()=>(S&&S.ads&&+S.ads.reward)||CFG.adReward, adW=()=>(S&&S.ads&&+S.ads.watched)||0;
 function addAdCards(n){const box=$('adl');if(!box)return;let h='';
  for(let k=0;k<n;k++){const i=adCount++;
@@ -455,8 +455,8 @@ async function watchAd(i){
   if(typeof show_12347245!=='function'){toast('Ad not available. Try again later.');return}
   adLbl='Loading...';adsRender();
   const st=await api('/api/ad/start',{});if(!st.ok){toast(st.error||'Error');return}
-  let watched=false;try{await show_12347245();watched=true}catch(e){watched=false}
-  if(!watched){toast('Ad was not completed. Please try again.');return}
+  let watched=false;const t0=Date.now();try{await show_12347245();watched=true}catch(e){watched=false}
+  if(!watched||Date.now()-t0<AD_MIN_MS){toast('Ad skipped! Please watch the full ad (15 seconds) to get your reward.');return}
   adTok=st.token;adTokAt=Date.now();toast('Ad watched! Now tap Claim.')
  }finally{adBusy=false;if(!adTok)adIdx=-1;adsRender()}}
 
