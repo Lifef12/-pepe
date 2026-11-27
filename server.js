@@ -42,7 +42,7 @@ const WHEEL_BIG = 300, WHEEL_SMALL = 100, WHEEL_BIG_CHANCE = 20;   // % chance o
 // Flow: Open (start token) -> ad dekho -> Claim (one-time token). Reward sirf SERVER credit karta hai.
 const AD_REWARD = 50;                 // 50 $PEPE per ad (change here)
 const AD_COOLDOWN_MS = 0;             // no wait between ads
-const AD_MIN_WATCH_MS = 2 * 1000;     // claim before this = ad was skipped / fake
+const AD_MIN_WATCH_MS = 15 * 1000;    // claim before this = ad was skipped / fake (ad 15s ka hai)
 const AD_TOKEN_TTL_MS = 10 * 60 * 1000;
 
 // ---------- TAP SYSTEM (energy + daily cap) ----------
@@ -611,7 +611,7 @@ app.use(express.static(path.join(__dirname, 'public'), {
     }
 }));
 app.get('/health', (req, res) => res.send(dbReady() ? 'OK' : 'OK (database connecting)'));
-app.get('/api/ping', (req, res) => res.json({ ok: true, db: dbReady(), version: 'pepe-rewards-v2-ads' }));
+app.get('/api/ping', (req, res) => res.json({ ok: true, db: dbReady(), version: 'pepe-rewards-v3-ads-15s' }));
 
 // ---------- USER API ----------
 async function backgroundVerifyCheck(userId, hasReferrer) {
