@@ -223,11 +223,21 @@ nav a.on{--ic:#fff;--ib:#075c3d;color:#fff;background:linear-gradient(180deg,#11
 
 <script>
 /* ================= MONETAG ADS ================= */
-// Rewarded interstitial: resolves true if ad was watched, false if unavailable/failed (never blocks the app)
+// Rewarded interstitial (SDK): resolves true if ad was watched, false if unavailable/failed (never blocks the app)
 function showRewardedAd(){return new Promise(res=>{try{
   if(typeof show_12364535!=='function')return res(false);
   show_12364535().then(()=>res(true)).catch(()=>res(false));
 }catch(e){res(false)}})}
+
+// Direct-link ad gate (Tasks + Daily check-in):
+// 1st click = ad opens, 15 seconds ke baad dobara click = reward claim. 15s se pehle claim NAHI hoga.
+const TASK_AD={};
+function gateAd(key){
+  const t=TASK_AD[key];
+  if(!t){openLink(DIRECT_AD_URL);TASK_AD[key]=Date.now();toast('Ad opened! Watch 15 seconds, then come back & tap again to claim.');return false}
+  const rem=AD_MIN_MS-(Date.now()-t);
+  if(rem>0){toast('Stay on the ad '+Math.ceil(rem/1000)+'s more, then claim.');return false}
+  delete TASK_AD[key];return true}
 // Automatic ads (tab-switch pop + in-app interstitial) REMOVED. Ads only on user action (Tasks / Watch Ads).
 </script>
 <script>
@@ -384,12 +394,18 @@ function tasks(){
 $('tk').onclick=async e=>{const b=e.target.closest('[data-k]');if(!b||busy)return;const k=TK.find(x=>x[0]===b.dataset.k),id=k[0];
  if(!S.isVerified){$('vs').style.display='flex';return}
  if(task[id]!=='C'){openLink(k[4]);task[id]='C';return tasks()}
- busy=true;await showRewardedAd();const r=await api('/api/task',{taskId:id});busy=false;if(!r.ok)return toast(r.error||'Error');setState(r.data);reward('Mission reward: <b>+'+RW(id)+' $PEPE</b> added to your balance.')};
+ busy=true;
+ // Direct-link ad: pehle click ad khulega, 15s baad dobara click par hi reward
+ if(TASK_DIRECT_ADS){if(!gateAd('task_'+id)){busy=false;return}}else await showRewardedAd();
+ const r=await api('/api/task',{taskId:id});busy=false;if(!r.ok)return toast(r.error||'Error');setState(r.data);reward('Mission reward: <b>+'+RW(id)+' $PEPE</b> added to your balance.')};
 
 function ci(){const n=S.checkin.streak%7,cl=S.checkin.claimed;
  $('days').innerHTML=CFG.checkin.map((v,i)=>"<div class='d "+(i<n||(cl&&i===n-1)?'done':'')+(i===n&&!cl?' now':'')+"'>D"+(i+1)+"<b>"+cf(v)+"</b></div>").join('');
  $('ci').disabled=cl;$('ci').textContent=cl?'Come back tomorrow':'Claim '+cf(CFG.checkin[n])}
-$('ci').onclick=async()=>{if(busy)return;busy=true;await showRewardedAd();const r=await api('/api/checkin');busy=false;if(!r.ok)return toast(r.error||'Error');setState(r.data);reward('Daily bonus: <b>+'+cf(+r.amount||0)+' $PEPE</b> is now added.')};
+$('ci').onclick=async()=>{if(busy)return;busy=true;
+ // Direct-link ad: pehle click ad khulega, 15s baad dobara click par hi reward
+ if(TASK_DIRECT_ADS){if(!gateAd('ci')){busy=false;return}}else await showRewardedAd();
+ const r=await api('/api/checkin');busy=false;if(!r.ok)return toast(r.error||'Error');setState(r.data);reward('Daily bonus: <b>+'+cf(+r.amount||0)+' $PEPE</b> is now added.')};
 
 
 let ang=0;
@@ -405,6 +421,10 @@ $('spin').onclick=async()=>{if(busy||S.spinDone)return;busy=true;$('spin').disab
  - Reward SERVER credit karta hai (token ek hi baar chalta hai). User neeche scroll kare to naye ads aate rehte hain. */
 let adBusy=false,adLbl='',adTok=null,adTokAt=0,adIdx=-1,adCount=0;
 const AD_BATCH=4,AD_TTL=9*60*1000,AD_MIN_MS=15000;   // ad kam az kam 15 second dekhna lazmi
+// Watch Ads tab: true = Monetag DIRECT LINK kholta hai, false = Monetag SDK rewarded ad
+const DIRECT_ADS=true,DIRECT_AD_URL='https://uplcm.com/4/11513244';
+// Tasks + daily check-in: true = direct link ad (15s gate), false = Monetag SDK video ad
+const TASK_DIRECT_ADS=true;
 const adCool=()=>0, adLast=()=>(S&&S.ads&&+S.ads.lastClaim)||0, adRew=()=>(S&&S.ads&&+S.ads.reward)||CFG.adReward, adW=()=>(S&&S.ads&&+S.ads.watched)||0;
 function addAdCards(n){const box=$('adl');if(!box)return;let h='';
  for(let k=0;k<n;k++){const i=adCount++;
@@ -419,7 +439,7 @@ function adsRender(){
   $('adt'+i).textContent='Watch Ad #'+(w+i+1);$('adr'+i).textContent='✔ +'+fmt(rw)+' $PEPE';
   let tx,cls='btn rv',dis=false,hint;
   if(adBusy){if(i===adIdx){tx=adLbl;dis=true;cls='btn gh';hint='Please wait...'}else{tx='Locked';dis=true;cls='btn gh';hint='Finish the current ad first.'}}
-  else if(adTok){if(i===adIdx){tx='Claim';cls='btn gd';hint='Ad watched ✓ Tap Claim to get your reward!'}else{tx='Locked';dis=true;cls='btn gh';hint='Claim your watched ad first.'}}
+  else if(adTok){if(i===adIdx){const rem=DIRECT_ADS?AD_MIN_MS-(Date.now()-adTokAt):0;if(rem>0){tx='Wait '+Math.ceil(rem/1000)+'s';dis=true;cls='btn gh';hint='Stay on the ad for 15 seconds, then come back.'}else{tx='Claim';cls='btn gd';hint='Ad watched ✓ Tap Claim to get your reward!'}}else{tx='Locked';dis=true;cls='btn gh';hint='Claim your watched ad first.'}}
   else if(wait>0){tx='Wait '+Math.ceil(wait/1000)+'s';dis=true;cls='btn gh';hint='Next ad will be ready shortly.'}
   else{tx='Open ›';hint='Open the ad, watch it & come back to claim your reward!'}
   if(b.textContent!==tx)b.textContent=tx;if(b.className!==cls)b.className=cls;b.disabled=dis;
@@ -434,13 +454,15 @@ async function watchAd(i){
  if(adBusy||busy)return;if(adTok&&i!==adIdx)return;
  adBusy=true;adIdx=i;
  try{
-  if(adTok){adLbl='Claiming...';adsRender();
+  if(adTok){if(DIRECT_ADS&&Date.now()-adTokAt<AD_MIN_MS){toast('Please stay on the ad for 15 seconds, then come back to claim.');return}
+   adLbl='Claiming...';adsRender();
    const cl=await api('/api/ad/claim',{token:adTok});
    if(!cl.ok){const m=cl.error||'Error';toast(m);if(/expired|invalid|closed too early/i.test(m))adTok=null;return}
    adTok=null;setState(cl.data);toast('+'+fmt(cl.reward||adRew())+' $PEPE claimed!');return}
-  if(typeof show_12364535!=='function'){toast('Ad not available. Try again later.');return}
+  if(!DIRECT_ADS&&typeof show_12364535!=='function'){toast('Ad not available. Try again later.');return}
   adLbl='Loading...';adsRender();
   const st=await api('/api/ad/start',{});if(!st.ok){toast(st.error||'Error');return}
+  if(DIRECT_ADS){openLink(DIRECT_AD_URL);adTok=st.token;adTokAt=Date.now();toast('Ad opened! Watch 15 seconds, then come back & tap Claim.');return}
   let watched=false;const t0=Date.now();try{await show_12364535();watched=true}catch(e){watched=false}
   if(!watched||Date.now()-t0<AD_MIN_MS){toast('Ad skipped! Please watch the full ad (15 seconds) to get your reward.');return}
   adTok=st.token;adTokAt=Date.now();toast('Ad watched! Now tap Claim.')
