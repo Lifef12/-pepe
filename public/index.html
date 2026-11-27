@@ -69,8 +69,8 @@ h2{font-size:20px;display:flex;align-items:center;gap:9px}h2::before{content:"";
 .tbl{max-height:360px;overflow:auto}.th,.tr{display:grid;grid-template-columns:1.2fr 1fr 1.2fr 1.3fr;gap:6px;align-items:center;font-size:12px;padding:10px 0}.th{color:var(--mu);font-weight:700;font-size:10.5px;text-transform:uppercase}.tr{border-top:1px solid var(--ln)}
 .pill{font-size:10px;font-weight:700;padding:3px 6px;border-radius:99px;background:#ffe3a1;color:#5a3a00;text-align:center;white-space:nowrap}.pill.ok{background:#c8f3e3;color:#0b6b4b}.pill.no{background:#ffd3d6;color:#8a1c22}
 .empty{text-align:center;color:var(--mu);padding:12px}
-nav{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;padding:0 22px calc(6px + env(safe-area-inset-bottom));z-index:40}
-nav div{width:100%;max-width:420px;display:grid;grid-template-columns:repeat(4,1fr);background:linear-gradient(180deg,var(--c),var(--c2));border:1px solid var(--ln);border-radius:28px;padding:5px;box-shadow:0 22px 44px rgba(20,30,70,.3),inset 0 1px 0 rgba(255,255,255,.8)}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;padding:0 14px calc(6px + env(safe-area-inset-bottom));z-index:40}
+nav div{width:100%;max-width:460px;display:grid;grid-template-columns:repeat(5,1fr);background:linear-gradient(180deg,var(--c),var(--c2));border:1px solid var(--ln);border-radius:28px;padding:5px;box-shadow:0 22px 44px rgba(20,30,70,.3),inset 0 1px 0 rgba(255,255,255,.8)}
 nav a{--ic:var(--ink);--ib:var(--c);position:relative;display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 0 5px;border-radius:22px;color:var(--ink);font-size:11px;font-weight:700;cursor:pointer;transition:.25s}
 nav a+a::before{content:"";position:absolute;left:0;top:24%;height:52%;width:1px;background:var(--ln)}nav a.on::before,nav a.on+a::before{display:none}
 nav a svg{width:23px;height:23px;filter:drop-shadow(0 3px 3px rgba(20,30,70,.3))}.i1{fill:var(--ic)}.i2{stroke:var(--ib)}
@@ -109,6 +109,17 @@ nav a.on{--ic:#fff;--ib:#075c3d;color:#fff;background:linear-gradient(180deg,#11
 .chip{font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:99px;border:1px solid var(--ln);background:var(--c);white-space:nowrap}
 .spb{height:14px;background:var(--c2);border-radius:99px;overflow:hidden;margin:12px 0 8px}.spb i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--a),var(--g));transition:width .35s}
 .tag{margin-top:14px;font-size:11px;font-weight:700;letter-spacing:3px;color:var(--mu)}
+/* ===== WATCH ADS ===== */
+.adl{display:flex;flex-direction:column;gap:12px}
+.adc{display:flex;align-items:center;gap:10px;background:var(--c);border:1px solid var(--ln);border-radius:22px;padding:12px;box-shadow:0 10px 26px rgba(20,30,70,.14),inset 0 1px 0 rgba(255,255,255,.4);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.ada{position:relative;width:62px;height:62px;flex:none;border-radius:16px;background:linear-gradient(135deg,#8b5cf6,#4c1d95);display:grid;place-items:center;font-size:30px;box-shadow:0 6px 14px rgba(76,29,149,.4)}
+.ada span{position:absolute;right:-7px;bottom:-7px;width:26px;height:26px;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:15px;border:2px solid var(--ln)}
+.add{width:1px;align-self:stretch;background:var(--ln)}
+.adbd{flex:1;min-width:0}.adbd b{display:block;font-size:15px}
+.adp{display:inline-block;font-style:normal;font-weight:700;font-size:11.5px;background:var(--a);color:#06140f;border-radius:99px;padding:2px 9px;margin-top:3px}
+.adbd small{display:block;color:var(--mu);font-size:11px;margin-top:4px;line-height:1.35}
+.adc .btn{min-width:84px;padding:11px 10px}
+.ast{display:flex;justify-content:space-between;font-size:13px;font-weight:700}.ast span{color:var(--mu)}.ast+.ast{margin-top:10px;padding-top:10px;border-top:1px dashed var(--ln)}
 </style>
 </head>
 <body>
@@ -119,6 +130,7 @@ nav a.on{--ic:#fff;--ib:#075c3d;color:#fff;background:linear-gradient(180deg,#11
  <div class="dl">
   <a data-go="home"><span>🏠</span>Home<i>›</i></a>
   <a data-go="quest"><span>✅</span>Tasks<i>›</i></a>
+  <a data-go="ads"><span>🎬</span>Watch ads<i>›</i></a>
   <a data-go="rank"><span>👥</span>Team &amp; ranking<i>›</i></a>
   <a data-go="wallet"><span>💰</span>Withdraw<i>›</i></a>
   <a data-go="wallet" data-sc="hist"><span>🧾</span>Withdrawal history<i>›</i></a>
@@ -176,6 +188,13 @@ nav a.on{--ic:#fff;--ib:#075c3d;color:#fff;background:linear-gradient(180deg,#11
   <div class="card"><div class="lbl" style="margin-bottom:6px">Badges</div><div id="badges"></div></div>
  </section>
 
+ <section class="tab" id="t-ads">
+  <h2>Watch Ads</h2>
+  <p class="mu">Open an ad, watch it &amp; come back to claim <b>+50 $PEPE</b>. <b>Unlimited</b> ads every day!</p>
+  <div class="card"><div class="ast"><span>Total ads watched</span><b id="adtot">0</b></div><div class="ast"><span>Earned from ads</span><b id="adern">0 $PEPE</b></div></div>
+  <div class="adl" id="adl"></div>
+ </section>
+
  <section class="tab" id="t-rank">
   <h2>Team</h2>
   <div class="card"><div class="lbl">Invite · 1,000 $PEPE per friend</div><p class="mu" style="margin-top:6px">Earn for every friend who joins with your link and completes verification.</p>
@@ -200,7 +219,7 @@ nav a.on{--ic:#fff;--ib:#075c3d;color:#fff;background:linear-gradient(180deg,#11
 </div>
 
 <nav><div>
-<a class="on" data-t="home"><svg viewBox="0 0 24 24"><path class="i1" d="M12 2.8l9.4 8.3a.8.8 0 0 1-.5 1.4H19V20a1 1 0 0 1-1 1h-3.5v-5.5h-5V21H6a1 1 0 0 1-1-1v-7.5H3.1a.8.8 0 0 1-.5-1.4z"/></svg>Home</a><a data-t="quest"><svg viewBox="0 0 24 24"><rect class="i1" x="3.5" y="4.5" width="14.5" height="17" rx="2.6"/><rect class="i1" x="7.5" y="2.4" width="6.5" height="4.2" rx="1.6"/><path class="i2" d="M6.8 11l1.2 1.2 2.2-2.4M6.8 16l1.2 1.2 2.2-2.4M12.5 11h3M12.5 16h1.5" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="18" cy="18" r="4.6" fill="#22c55e"/><path d="M15.8 18.1l1.6 1.6 2.9-3.1" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Task</a><a data-t="rank"><svg viewBox="0 0 24 24"><circle class="i1" cx="12" cy="7.2" r="3.4"/><path class="i1" d="M5.8 20.5c0-3.7 2.7-6.1 6.2-6.1s6.2 2.4 6.2 6.1a.8.8 0 0 1-.8.8H6.6a.8.8 0 0 1-.8-.8z"/><circle class="i1" cx="4.6" cy="10.6" r="2.4" opacity=".85"/><circle class="i1" cx="19.4" cy="10.6" r="2.4" opacity=".85"/></svg>Team</a><a data-t="wallet"><svg viewBox="0 0 24 24"><path class="i1" d="M4.5 7.5L16 3.6a1.6 1.6 0 0 1 2.1 1.5V8H4.5z"/><rect class="i1" x="2.5" y="6.8" width="18" height="13.7" rx="2.8"/><circle cx="18" cy="16.6" r="4.7" fill="#f5b400"/><text x="18" y="19.2" font-size="7" text-anchor="middle" fill="#fff" font-weight="800" font-family="Arial">$</text></svg>Wallet</a>
+<a class="on" data-t="home"><svg viewBox="0 0 24 24"><path class="i1" d="M12 2.8l9.4 8.3a.8.8 0 0 1-.5 1.4H19V20a1 1 0 0 1-1 1h-3.5v-5.5h-5V21H6a1 1 0 0 1-1-1v-7.5H3.1a.8.8 0 0 1-.5-1.4z"/></svg>Home</a><a data-t="quest"><svg viewBox="0 0 24 24"><rect class="i1" x="3.5" y="4.5" width="14.5" height="17" rx="2.6"/><rect class="i1" x="7.5" y="2.4" width="6.5" height="4.2" rx="1.6"/><path class="i2" d="M6.8 11l1.2 1.2 2.2-2.4M6.8 16l1.2 1.2 2.2-2.4M12.5 11h3M12.5 16h1.5" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="18" cy="18" r="4.6" fill="#22c55e"/><path d="M15.8 18.1l1.6 1.6 2.9-3.1" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Task</a><a data-t="ads"><svg viewBox="0 0 24 24"><circle class="i1" cx="12" cy="12" r="9.6"/><path d="M10 8v8l6.2-4z" style="fill:var(--ib)"/></svg>Ads</a><a data-t="rank"><svg viewBox="0 0 24 24"><circle class="i1" cx="12" cy="7.2" r="3.4"/><path class="i1" d="M5.8 20.5c0-3.7 2.7-6.1 6.2-6.1s6.2 2.4 6.2 6.1a.8.8 0 0 1-.8.8H6.6a.8.8 0 0 1-.8-.8z"/><circle class="i1" cx="4.6" cy="10.6" r="2.4" opacity=".85"/><circle class="i1" cx="19.4" cy="10.6" r="2.4" opacity=".85"/></svg>Team</a><a data-t="wallet"><svg viewBox="0 0 24 24"><path class="i1" d="M4.5 7.5L16 3.6a1.6 1.6 0 0 1 2.1 1.5V8H4.5z"/><rect class="i1" x="2.5" y="6.8" width="18" height="13.7" rx="2.8"/><circle cx="18" cy="16.6" r="4.7" fill="#f5b400"/><text x="18" y="19.2" font-size="7" text-anchor="middle" fill="#fff" font-weight="800" font-family="Arial">$</text></svg>Wallet</a>
 </div></nav>
 
 <script>
@@ -223,7 +242,7 @@ window.addEventListener('load',()=>{try{
 /* ================= CONFIG ================= */
 const API_BASE='https://pepe-1-f2ra.onrender.com';   // Render server
 const BOT='PepeRewardsTg_Bot', SUP='https://t.me/AlexMorgan1101';
-const CFG={tapBase:1,tapCap:500,maxLvl:10,minWd:7000,minRefs:4,friend:1000,task:500,rw:{},joinBonus:200,
+const CFG={tapBase:1,tapCap:500,maxLvl:10,minWd:7000,minRefs:4,minAds:4,adReward:50,friend:1000,task:500,rw:{},joinBonus:200,
  checkin:[50,75,100,150,200,250,300],wheel:[100,300,100,300,100,300,100,300],
  ranks:[['Tadpole',0],['Froglet',2000],['Hopper',10000],['Jumper',40000],['Alpha',120000],['Legend',400000]]};
 const TK=[['tg2','✈️','Join Telegram','','https://t.me/paymentchanneluta',0],['yt1','▶️','YouTube 1','Subscribe, submit your task & claim your reward!','https://youtube.com/@cryptotech2.1?si=Se0lLUv35lh1wVTn',1],['yt2','▶️','YouTube 2','Subscribe, submit your task & claim your reward!','https://youtube.com/@noor-e-eman-j4x?si=c2J3wV8q8aTyg1GF',1],['wa1','💬','WhatsApp Channel','Join the channel, submit your task & claim your reward!','https://whatsapp.com/channel/0029VbD5A2Q3LdQREXOzuk3i',1]];
@@ -285,7 +304,7 @@ try{tg&&tg.disableVerticalSwipes&&tg.disableVerticalSwipes()}catch(e){}
 /* ================= API LAYER =================
  Har endpoint {ok,data|error} return kare. data = poori state (neeche mock() me shape dekho).
  Backend banate waqt yehi endpoints banao:
- POST /api/me /api/verify /api/tap{taps} /api/checkin /api/spin
+ POST /api/me /api/verify /api/tap{taps} /api/checkin /api/spin /api/ad/start /api/ad/claim{token}
       /api/task{taskId} /api/yt/submit{taskId} /api/yt/claim{taskId} /api/withdraw{amount,address} */
 const LIVE=!!API_BASE&&!!initData;
 async function api(path,body,retries=0){
@@ -303,16 +322,17 @@ async function api(path,body,retries=0){
 
 /* ---------- LOCAL MOCK (sirf HTML preview ke liye; live me kabhi use nahi hota) ---------- */
 let M=(()=>{try{const s=localStorage.getItem('pepe_mock2');if(s)return JSON.parse(s)}catch(e){}
- return{bal:0,total:0,energy:500,t:Date.now(),tapDay:-1,tapToday:0,verified:false,joined:false,ci:{last:-1,streak:0},spin:-1,tasks:{},proof:null,
+ return{bal:0,total:0,energy:500,t:Date.now(),tapDay:-1,tapToday:0,verified:false,joined:false,ci:{last:-1,streak:0},spin:-1,tasks:{},proof:null,adsW:0,adLast:0,adTok:'',
   refs:[1,2,3,4].map(i=>({id:10000000+i*137,date:Date.now()-i*864e5,bonus:CFG.friend})),wds:[]}})();
 const dayN=()=>Math.floor(Date.now()/864e5), maxE=()=>500, tapV=()=>CFG.tapBase;
 const rollDay=()=>{if(M.tapDay!==dayN()){M.tapDay=dayN();M.tapToday=0}};
 function mdata(){rollDay();const t=dayN(),cl=M.ci.last===t;if(!cl&&M.ci.last>=0&&t-M.ci.last>1)M.ci.streak=0;
  try{localStorage.setItem('pepe_mock2',JSON.stringify(M))}catch(e){}
  const lb=[['PepeKing',100000],['MoonPepe',80000],['TapQueen',60000],['FrogX',45000],['BNBhunter',30000],['You',M.total]].sort((a,b)=>b[1]-a[1]);
- return{balance:M.bal,total:M.total,energy:M.energy,maxEnergy:maxE(),tapValue:tapV(),tapToday:M.tapToday,tapCap:CFG.tapCap,isVerified:M.verified,
+ return{balance:M.bal,total:M.total,energy:M.energy,maxEnergy:maxE(),tapValue:tapV(),tapToday:M.tapToday,tapCap:CFG.tapCap,isVerified:M.verified,serverTime:Date.now(),
   checkin:{claimed:cl,streak:M.ci.streak},spinDone:M.spin===t,tasks:M.tasks,proof:M.proof,referrals:M.refs,withdrawals:M.wds,leaderboard:lb,
-  rules:{minWithdraw:CFG.minWd,minRefs:CFG.minRefs}}}
+  ads:{reward:CFG.adReward,cooldown:30000,lastClaim:M.adLast||0,watched:M.adsW||0},
+  rules:{minWithdraw:CFG.minWd,minRefs:CFG.minRefs,minAds:CFG.minAds}}}
 async function mock(p,b){await sleep(120);const now=Date.now();M.energy=Math.min(maxE(),M.energy+(now-M.t)/1000*.1);M.t=now;
  const add=n=>{M.bal+=n;M.total+=n},ok=x=>Object.assign({ok:true,data:mdata()},x||{}),bad=e=>({ok:false,error:e,data:mdata()});
  switch(p){
@@ -321,19 +341,21 @@ async function mock(p,b){await sleep(120);const now=Date.now();M.energy=Math.min
  case'/api/tap':{rollDay();const g=Math.min(Math.max(0,b.taps|0),Math.floor(M.energy),CFG.tapCap-M.tapToday);if(g<=0)return bad(M.tapToday>=CFG.tapCap?'Daily tap limit reached':'Out of energy');M.energy-=g;M.tapToday+=g;add(g*tapV());return ok()}
  case'/api/checkin':{if(M.ci.last===dayN())return bad('Already claimed');const v=CFG.checkin[M.ci.streak%7];M.ci.streak++;M.ci.last=dayN();add(v);return ok({amount:v})}
  case'/api/spin':{if(M.spin===dayN())return bad('Already spun');M.spin=dayN();const q=Math.random()*100,v=q<20?300:100;add(v);return ok({amount:v})}
+ case'/api/ad/start':if(now-(M.adLast||0)<30000)return bad('Please wait for the next ad.');M.adTok='t'+now;return{ok:true,token:M.adTok,reward:CFG.adReward};
+ case'/api/ad/claim':if(!b.token||b.token!==M.adTok)return bad('Ad session expired. Please tap Open again.');M.adTok='';M.adsW=(M.adsW||0)+1;M.adLast=now;add(CFG.adReward);return ok({reward:CFG.adReward});
  case'/api/task':if(M.tasks[b.taskId])return bad('Task already claimed');M.tasks[b.taskId]=1;add(CFG.task);return ok();
  case'/api/yt/submit':M.proof={task:b.taskId};return ok();
  case'/api/yt/claim':if(!M.proof||M.proof.task!==b.taskId)return bad('Submit the task first');M.tasks[b.taskId]=1;M.proof=null;add(CFG.task);return ok();
- case'/api/withdraw':if(M.refs.length<CFG.minRefs)return bad('You need '+CFG.minRefs+' verified referrals');if(b.amount<CFG.minWd)return bad('Minimum withdrawal not met');if(b.amount>M.bal)return bad('Insufficient balance');
+ case'/api/withdraw':if(M.refs.length<CFG.minRefs)return bad('You need '+CFG.minRefs+' verified referrals');if((M.adsW||0)<CFG.minAds)return bad('Watch at least '+CFG.minAds+' ads before withdraw.');if(b.amount<CFG.minWd)return bad('Minimum withdrawal not met');if(b.amount>M.bal)return bad('Insufficient balance');
   M.bal-=b.amount;M.wds.unshift({date:now,address:b.address,amount:b.amount,status:'PENDING'});return ok();}
  return bad('Unknown API')}
 
 /* ================= STATE ================= */
-let S=null,en=0,pending=0,inflight=0,tapBusy=false,flushT=null,busy=false,tapTimes=[];const task={};
+let S=null,en=0,pending=0,inflight=0,tapBusy=false,flushT=null,busy=false,tapTimes=[],tOff=0;const task={};
 const refs=()=>((S&&S.referrals)||[]).filter(r=>r&&r.id);
-const minWd=()=>(S&&S.rules&&+S.rules.minWithdraw)||CFG.minWd, minRefs=()=>(S&&S.rules&&+S.rules.minRefs)||CFG.minRefs;
-function setState(d){S=d;en=d.energy-pending-inflight;render();if(READY&&!d.isVerified)$('vs').style.display='flex'}
-function render(){if(!S)return;home();head();tasks();ci();sp();team();wallet()}
+const minWd=()=>(S&&S.rules&&+S.rules.minWithdraw)||CFG.minWd, minRefs=()=>(S&&S.rules&&+S.rules.minRefs)||CFG.minRefs, minAds=()=>(S&&S.rules&&+S.rules.minAds)||CFG.minAds;
+function setState(d){S=d;tOff=(+d.serverTime||Date.now())-Date.now();en=d.energy-pending-inflight;render();if(READY&&!d.isVerified)$('vs').style.display='flex'}
+function render(){if(!S)return;home();head();tasks();ci();sp();team();wallet();adsRender()}
 function home(){const per=S.tapValue;$('bal').textContent=fmt(S.balance+(pending+inflight)*per);
  $('et').textContent=Math.floor(en)+' / '+S.maxEnergy;$('eb').style.width=Math.max(0,en)/S.maxEnergy*100+'%';$('coin').classList.toggle('off',en<1||S.tapToday+pending+inflight>=S.tapCap);$('tv').textContent=fmt(Math.min(S.tapCap,S.tapToday+pending+inflight))+' / '+fmt(S.tapCap);
  $('wbig').textContent=fmt(S.balance);$('mw').textContent=cf(minWd());$('wl').textContent='Minimum withdraw · '+cf(minWd())+' $PEPE';$('amt').placeholder='Min '+fmt(minWd())}
@@ -391,6 +413,53 @@ $('spin').onclick=async()=>{if(busy||S.spinDone)return;busy=true;$('spin').disab
  ang=(Math.floor(ang/360)+6)*360-(i*45+22.5);$('wheel').style.transform='rotate('+ang+'deg)';
  setTimeout(()=>{busy=false;setState(r.data);reward('Lucky wheel: <b>+'+cf(+r.amount||0)+' $PEPE</b> is now added.')},3300)};
 
+/* ================= WATCH ADS (Open -> ad dekho -> wapas aao -> Claim, infinite scroll) =================
+ - Open  : server se one-time token leta hai, phir ad dikhata hai
+ - Claim : ad poora hone ke baad wahi card "Claim" ban jata hai, user tap karke reward leta hai
+ - Reward SERVER credit karta hai (token ek hi baar chalta hai). User neeche scroll kare to naye ads aate rehte hain. */
+let adBusy=false,adLbl='',adTok=null,adTokAt=0,adIdx=-1,adCount=0;
+const AD_BATCH=4,AD_TTL=9*60*1000;
+const adCool=()=>(S&&S.ads&&+S.ads.cooldown)||30000, adLast=()=>(S&&S.ads&&+S.ads.lastClaim)||0, adRew=()=>(S&&S.ads&&+S.ads.reward)||CFG.adReward, adW=()=>(S&&S.ads&&+S.ads.watched)||0;
+function addAdCards(n){const box=$('adl');if(!box)return;let h='';
+ for(let k=0;k<n;k++){const i=adCount++;
+  h+="<div class='adc'><div class='ada'>🎬<span>🐸</span></div><div class='add'></div><div class='adbd'><b id='adt"+i+"'>Watch Ad</b><em class='adp' id='adr"+i+"'>✔ +50 $PEPE</em><small id='adh"+i+"'></small></div><button class='btn rv' id='adb"+i+"' data-i='"+i+"'>Open ›</button></div>"}
+ box.insertAdjacentHTML('beforeend',h)}
+function adsRender(){
+ if(adCount===0)addAdCards(AD_BATCH+2);
+ const w=adW(),rw=adRew();$('adtot').textContent=fmt(w);$('adern').textContent=fmt(w*rw)+' $PEPE';
+ if(adTok&&!adBusy&&Date.now()-adTokAt>AD_TTL){adTok=null;adIdx=-1}
+ const wait=adLast()+adCool()-(Date.now()+tOff);
+ for(let i=0;i<adCount;i++){const b=$('adb'+i);if(!b)continue;
+  $('adt'+i).textContent='Watch Ad #'+(w+i+1);$('adr'+i).textContent='✔ +'+fmt(rw)+' $PEPE';
+  let tx,cls='btn rv',dis=false,hint;
+  if(adBusy){if(i===adIdx){tx=adLbl;dis=true;cls='btn gh';hint='Please wait...'}else{tx='Locked';dis=true;cls='btn gh';hint='Finish the current ad first.'}}
+  else if(adTok){if(i===adIdx){tx='Claim';cls='btn gd';hint='Ad watched ✓ Tap Claim to get your reward!'}else{tx='Locked';dis=true;cls='btn gh';hint='Claim your watched ad first.'}}
+  else if(wait>0){tx='Wait '+Math.ceil(wait/1000)+'s';dis=true;cls='btn gh';hint='Next ad will be ready shortly.'}
+  else{tx='Open ›';hint='Open the ad, watch it & come back to claim your reward!'}
+  if(b.textContent!==tx)b.textContent=tx;if(b.className!==cls)b.className=cls;b.disabled=dis;
+  const h=$('adh'+i);if(h&&h.textContent!==hint)h.textContent=hint}}
+setInterval(()=>{if(S)adsRender()},1000);
+function adsFill(){const t=$('t-ads');if(!t||!t.classList.contains('on'))return;let g=0;
+ while(g++<10&&(innerHeight+scrollY)>=document.documentElement.scrollHeight-700)addAdCards(AD_BATCH);adsRender()}
+addEventListener('scroll',adsFill,{passive:true});
+$('adl').onclick=e=>{const b=e.target.closest('[data-i]');if(b)watchAd(+b.dataset.i)};
+async function watchAd(i){
+ if(!S||!S.isVerified){$('vs').style.display='flex';return}
+ if(adBusy||busy)return;if(adTok&&i!==adIdx)return;
+ adBusy=true;adIdx=i;
+ try{
+  if(adTok){adLbl='Claiming...';adsRender();
+   const cl=await api('/api/ad/claim',{token:adTok});
+   if(!cl.ok){const m=cl.error||'Error';toast(m);if(/expired|invalid|closed too early/i.test(m))adTok=null;return}
+   adTok=null;setState(cl.data);toast('+'+fmt(cl.reward||adRew())+' $PEPE claimed!');return}
+  if(typeof show_12347245!=='function'){toast('Ad not available. Try again later.');return}
+  adLbl='Loading...';adsRender();
+  const st=await api('/api/ad/start',{});if(!st.ok){toast(st.error||'Error');return}
+  let watched=false;try{await show_12347245();watched=true}catch(e){watched=false}
+  if(!watched){toast('Ad was not completed. Please try again.');return}
+  adTok=st.token;adTokAt=Date.now();toast('Ad watched! Now tap Claim.')
+ }finally{adBusy=false;if(!adTok)adIdx=-1;adsRender()}}
+
 /* ================= TEAM / RANKING ================= */
 $('rl').value='https://t.me/'+BOT+'?start='+userId;
 function team(){const l=refs();$('rt').textContent=l.length;$('rbn').textContent=fmt(l.reduce((t,r)=>t+(+r.bonus||0),0));
@@ -407,6 +476,7 @@ $('max').onclick=()=>{if(S)$('amt').value=String(Math.floor(S.balance))};
 const ask=(a,m)=>new Promise(res=>{$('wa').textContent=a;$('wt').textContent=fmt(m)+' $PEPE';$('wm').classList.add('on');const f=v=>{$('wm').classList.remove('on');$('wyes').onclick=null;$('wno').onclick=null;res(v)};$('wyes').disabled=false;$('wyes').onclick=()=>{$('wyes').disabled=true;f(true)};$('wno').onclick=()=>f(false)});
 $('wd').onclick=async()=>{if(busy)return;if(!S.isVerified){$('vs').style.display='flex';return}
  const rc=refs().length,mr=minRefs();if(rc<mr)return toast('You need at least '+mr+' verified referrals to withdraw. You have '+rc+'.');
+ const aw=adW(),ma=minAds();if(aw<ma)return toast('Watch at least '+ma+' ads before withdraw. You watched '+aw+'.');
  const a=$('addr').value.trim(),m=parseFloat($('amt').value);
  if(!a)return toast('Paste your $PEPE BEP-20 address.');if(!isAddr(a))return toast('Invalid address. It must start with 0x and be 42 characters.');
  if(!m||!isFinite(m)||m<=0)return toast('Enter a valid amount!');if(m<minWd())return toast('Minimum withdrawal is '+fmt(minWd())+' $PEPE!');if(m>S.balance)return toast('Insufficient balance!');
@@ -422,9 +492,9 @@ $('vb').onclick=async()=>{const b=$('vb');b.textContent='Checking...';b.disabled
  chStatus(null);setState(r.data);$('vs').style.display='none';go('home');markSeen();toast(r.joinBonus?'Verified! Joining bonus +200 $PEPE added':'Verification successful!')};
 
 /* ================= NAV / THEME / MENU ================= */
-function go(t){document.querySelectorAll('nav a,.tab').forEach(x=>x.classList.remove('on'));document.querySelector('nav a[data-t="'+t+'"]').classList.add('on');$('t-'+t).classList.add('on');scrollTo(0,0);if(t==='rank'||t==='wallet')refresh();autoAd()}
+function go(t){document.querySelectorAll('nav a,.tab').forEach(x=>x.classList.remove('on'));document.querySelector('nav a[data-t="'+t+'"]').classList.add('on');$('t-'+t).classList.add('on');scrollTo(0,0);if(t==='rank'||t==='wallet')refresh();if(t==='ads'){adsRender();setTimeout(adsFill,60)}autoAd()}
 document.querySelectorAll('nav a').forEach(a=>a.onclick=()=>go(a.dataset.t));
-async function refresh(){if(!S||!S.isVerified||document.hidden||pending||inflight||tapBusy||busy)return;const r=await api('/api/me');if(r.ok)setState(r.data)}
+async function refresh(){if(!S||!S.isVerified||document.hidden||pending||inflight||tapBusy||busy||adBusy)return;const r=await api('/api/me');if(r.ok)setState(r.data)}
 setInterval(()=>{if($('t-rank').classList.contains('on'))refresh()},15000);
 let dark=matchMedia('(prefers-color-scheme:dark)').matches;
 const theme=()=>{document.documentElement.setAttribute('data-theme',dark?'dark':'light');$('th').classList.toggle('on',dark)};
