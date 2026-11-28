@@ -189,7 +189,7 @@ nav a.on{--ic:#fff;--ib:#075c3d;color:#fff;background:linear-gradient(180deg,#11
 
  <section class="tab" id="t-ads">
   <h2>Watch Ads</h2>
-  <p class="mu">Open an ad, watch it &amp; come back to claim <b>+70 $PEPE</b>. <b>Unlimited</b> ads every day!</p>
+  <p class="mu">Open an ad, watch it &amp; come back to claim <b>+60 $PEPE</b>. <b>Unlimited</b> ads every day!</p>
   <div class="card"><div class="ast"><span>Total ads watched</span><b id="adtot">0</b></div><div class="ast"><span>Earned from ads</span><b id="adern">0 $PEPE</b></div></div>
   <div class="adl" id="adl"></div>
  </section>
@@ -269,7 +269,7 @@ function gateAd(key){
 /* ================= CONFIG ================= */
 const API_BASE='https://pepe-1-f2ra.onrender.com';   // Render server
 const BOT='PepeRewardsTg_Bot', SUP='https://t.me/AlexMorgan1101';
-const CFG={tapBase:1,tapCap:300,maxLvl:10,minWd:7000,minRefs:4,minAds:4,adReward:70,friend:1000,task:300,rw:{},joinBonus:200,
+const CFG={tapBase:1,tapCap:300,maxLvl:10,minWd:7000,minRefs:4,minAds:4,adReward:60,friend:1000,task:300,rw:{},joinBonus:200,
  checkin:[50,75,100,150,200,250,300],wheel:[100,300,100,300,100,300,100,300],
  ranks:[['Tadpole',0],['Froglet',2000],['Hopper',10000],['Jumper',40000],['Alpha',120000],['Legend',400000]]};
 const TK=[['tc1','📢','Join Official Channel','Join the channel, then tap Check to claim your reward!','https://t.me/Bonk_official',0],['tc2','💸','Join Payments Channel','Join the channel, then tap Check to claim your reward!','https://t.me/bonk_taping',0]];
@@ -458,7 +458,7 @@ const TASK_DIRECT_ADS=true;
 const adCool=()=>0, adLast=()=>(S&&S.ads&&+S.ads.lastClaim)||0, adRew=()=>(S&&S.ads&&+S.ads.reward)||CFG.adReward, adW=()=>(S&&S.ads&&+S.ads.watched)||0;
 function addAdCards(n){const box=$('adl');if(!box)return;let h='';
  for(let k=0;k<n;k++){const i=adCount++;
-  h+="<div class='adc'><div class='ada'>🎬<span>🐸</span></div><div class='add'></div><div class='adbd'><b id='adt"+i+"'>Watch Ad</b><em class='adp' id='adr"+i+"'>✔ +70 $PEPE</em><small id='adh"+i+"'></small></div><button class='btn rv' id='adb"+i+"' data-i='"+i+"'>Open ›</button></div>"}
+  h+="<div class='adc'><div class='ada'>🎬<span>🐸</span></div><div class='add'></div><div class='adbd'><b id='adt"+i+"'>Watch Ad</b><em class='adp' id='adr"+i+"'>✔ +60 $PEPE</em><small id='adh"+i+"'></small></div><button class='btn rv' id='adb"+i+"' data-i='"+i+"'>Open ›</button></div>"}
  box.insertAdjacentHTML('beforeend',h)}
 function adsRender(){
  if(adCount===0)addAdCards(AD_BATCH+2);
