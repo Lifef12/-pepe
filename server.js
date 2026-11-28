@@ -40,7 +40,7 @@ const WHEEL_BIG = 300, WHEEL_SMALL = 100, WHEEL_BIG_CHANCE = 20;   // % chance o
 
 // ---------- WATCH ADS (Monetag rewarded) ----------
 // Flow: Open (start token) -> ad dekho -> Claim (one-time token). Reward sirf SERVER credit karta hai.
-const AD_REWARD = 70;                 // 70 $PEPE per ad (change here)
+const AD_REWARD = 50;                 // 50 $PEPE per ad (change here)
 const AD_COOLDOWN_MS = 0;             // no wait between ads
 const AD_MIN_WATCH_MS = 15 * 1000;    // claim before this = ad was skipped / fake (ad 15s ka hai)
 const AD_TOKEN_TTL_MS = 10 * 60 * 1000;
